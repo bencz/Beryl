@@ -1,0 +1,51 @@
+﻿/* Syntax:
+ * Program = Single-Command .
+ * Command = Single-Command | Command ";" Single-Command .
+ * Single-Command = 
+ *      V-name ":=" Expression | 
+ *      Identifier "(" Expression ")" |
+ *      "if" Expression "then" Single-Command "else" Single-Command |
+ *      "while" Expression "do" Single-Command |
+ *      "let" Declaration "in" Single-Command |
+ *      "begin" Command "end" .
+ * Expression = Primary-Expression | Expression Operator Primary-Expression .
+ * Primary-Expression = Integer-Literal | V-name | Operator Primary-Expression | "(" Expression ")" .
+ * V-name             = Identifier .
+ * Declaration        = Single-Declaration | Declaration ";" Single-Declaration .
+ * Single-Declaration = "const" Identifier "~" Expression | "var" Identifier ":" Type-denoter .
+ * Type-denoter       = Identifer .
+ * Operator           = "+" | "-" | "*" | "/" | "<" | ">" | "=" | "\" .
+ * Identifier         = Letter | Identifier Letter | Identifier Digit .
+ * Integer-Literal    = Digit | Integer-Literal Digit .
+ * Comment            = "!" Graphics EOL .
+ */
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+
+namespace Beryl
+{
+    
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            StreamReader sr = new StreamReader(args[0]);
+            Scanner scanner = new Scanner(args[0], sr, 4);
+            for (; ; )
+            {
+                Token token = scanner.ReadToken();
+                Console.WriteLine(token.Position.ToString() + ":" + token.ToString());
+
+                if (token.Kind == TokenKind.EndOfFile)
+                    break;
+            }
+            sr.Close();
+            Console.ReadLine();
+        }
+    }
+}
