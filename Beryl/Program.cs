@@ -7,7 +7,8 @@
  *      "if" Expression "then" Single-Command "else" Single-Command |
  *      "while" Expression "do" Single-Command |
  *      "let" Declaration "in" Single-Command |
- *      "begin" Command "end" .
+ *      "begin" Command "end" |
+ *      "func" Identifier "(" Parameters ")" ":" TypeDenoter "~" Expression .
  * Expression = Primary-Expression | Expression Operator Primary-Expression .
  * Primary-Expression = Integer-Literal | V-name | Operator Primary-Expression | "(" Expression ")" .
  * V-name             = Identifier .
@@ -34,6 +35,7 @@ namespace Beryl
     {
         static void Main(string[] args)
         {
+#if false
             StreamReader sr = new StreamReader(args[0]);
             Scanner scanner = new Scanner(args[0], sr, 4);
             for (; ; )
@@ -46,6 +48,13 @@ namespace Beryl
             }
             sr.Close();
             Console.ReadLine();
+#else
+            StreamReader reader = new StreamReader(args[0]);
+            Scanner scanner = new Scanner(args[0], reader, 4);
+            Parser parser = new Parser(scanner);
+            AST.Program program = parser.ParseProgram();
+            Console.ReadLine();
+#endif
         }
     }
 }

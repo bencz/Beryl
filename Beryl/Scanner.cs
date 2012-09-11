@@ -107,6 +107,15 @@ namespace Beryl
             char ch = ReadChar();
             switch (ch)
             {
+                // discard whitespace
+                case ' ':
+                case '\t':
+                case '\n':
+                case '\r':
+                    while (char.IsWhiteSpace(_nextChar))
+                        ReadChar();
+                    return ScanToken();
+
                 case ';':
                     result.Kind = TokenKind.Semicolon;
                     break;
@@ -114,6 +123,7 @@ namespace Beryl
                 case ':':
                     if (_nextChar == '=')
                     {
+                        ReadChar();
                         result.Kind = TokenKind.Assignment;
                         break;
                     }
@@ -164,10 +174,6 @@ namespace Beryl
                 case '\\':
                     result.Kind = TokenKind.Backslash;
                     break;
-
-                case '\n':
-                case '\r':
-                    return ScanToken();
 
                 case EOF:
                     result.Kind = TokenKind.EndOfFile;

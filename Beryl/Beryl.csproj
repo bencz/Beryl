@@ -42,6 +42,30 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AST\AssignCommand.cs" />
+    <Compile Include="AST\BeginCommand.cs" />
+    <Compile Include="AST\BinaryExpression.cs" />
+    <Compile Include="AST\Commands.cs" />
+    <Compile Include="AST\ConstDeclaration.cs" />
+    <Compile Include="AST\Declaration.cs" />
+    <Compile Include="AST\Expression.cs" />
+    <Compile Include="AST\FunctionDeclaration.cs" />
+    <Compile Include="AST\IfCommand.cs" />
+    <Compile Include="AST\IntegerLiteral.cs" />
+    <Compile Include="AST\CallCommand.cs" />
+    <Compile Include="AST\LetCommand.cs" />
+    <Compile Include="AST\Node.cs" />
+    <Compile Include="AST\Operator.cs" />
+    <Compile Include="AST\Parameter.cs" />
+    <Compile Include="AST\Parenthesis.cs" />
+    <Compile Include="AST\Program.cs" />
+    <Compile Include="AST\Command.cs" />
+    <Compile Include="AST\Declarations.cs" />
+    <Compile Include="AST\UnaryExpression.cs" />
+    <Compile Include="AST\VarDeclaration.cs" />
+    <Compile Include="AST\Variable.cs" />
+    <Compile Include="AST\WhileCommand.cs" />
+    <Compile Include="ParseError.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Position.cs" />
     <Compile Include="Program.cs" />
