@@ -5,10 +5,7 @@ using System.Text;
 
 namespace Beryl.AST
 {
-    public abstract class Command : Node
+    public abstract class Type: Node
     {
-        public Command()
-        {
-        }
     }
 }

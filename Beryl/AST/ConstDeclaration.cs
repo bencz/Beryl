@@ -8,13 +8,27 @@ namespace Beryl.AST
     public class ConstDeclaration: Declaration
     {
         private string _identifier;
+        public string Identifier
+        {
+            get { return _identifier; }
+        }
+
         private Expression _expression;
+        public Expression Expression
+        {
+            get { return _expression; }
+        }
 
         public ConstDeclaration(string identifier, Expression expression)
         {
             _identifier = identifier;
             _expression = expression;
             _expression.Parent = this;
+        }
+
+        public override void visit(Visitor that)
+        {
+            that.visit(this);
         }
     }
 }

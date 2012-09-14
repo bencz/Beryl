@@ -42,7 +42,7 @@ namespace Beryl
             _keywords["if"] = TokenKind.Keyword_If;
             _keywords["in"] = TokenKind.Keyword_In;
             _keywords["let"] = TokenKind.Keyword_Let;
-            _keywords["then"] = TokenKind.Keyword_Let;
+            _keywords["then"] = TokenKind.Keyword_Then;
             _keywords["var"] = TokenKind.Keyword_Var;
             _keywords["while"] = TokenKind.Keyword_While;
         }

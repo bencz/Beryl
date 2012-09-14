@@ -8,12 +8,21 @@ namespace Beryl.AST
     public abstract class Declarations: Node
     {
         private Declaration[] _declarations;
+        public Declaration[] DeclarationsArray
+        {
+            get { return _declarations; }
+        }
 
         public Declarations(Declaration[] declarations)
         {
             _declarations = declarations;
             foreach (Declaration declaration in _declarations)
                 declaration.Parent = this;
+        }
+
+        public override void visit(Visitor that)
+        {
+            that.visit(this);
         }
     }
 }

@@ -45,6 +45,7 @@
     <Compile Include="AST\AssignCommand.cs" />
     <Compile Include="AST\BeginCommand.cs" />
     <Compile Include="AST\BinaryExpression.cs" />
+    <Compile Include="Checker.cs" />
     <Compile Include="AST\Commands.cs" />
     <Compile Include="AST\ConstDeclaration.cs" />
     <Compile Include="AST\Declaration.cs" />
@@ -53,6 +54,7 @@
     <Compile Include="AST\IfCommand.cs" />
     <Compile Include="AST\IntegerLiteral.cs" />
     <Compile Include="AST\CallCommand.cs" />
+    <Compile Include="AST\IntegerType.cs" />
     <Compile Include="AST\LetCommand.cs" />
     <Compile Include="AST\Node.cs" />
     <Compile Include="AST\Operator.cs" />
@@ -61,10 +63,14 @@
     <Compile Include="AST\Program.cs" />
     <Compile Include="AST\Command.cs" />
     <Compile Include="AST\Declarations.cs" />
+    <Compile Include="AST\Type.cs" />
     <Compile Include="AST\UnaryExpression.cs" />
     <Compile Include="AST\VarDeclaration.cs" />
     <Compile Include="AST\Variable.cs" />
+    <Compile Include="AST\Visitor.cs" />
     <Compile Include="AST\WhileCommand.cs" />
+    <Compile Include="CodeGen.cs" />
+    <Compile Include="CoderError.cs" />
     <Compile Include="ParseError.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Position.cs" />
@@ -72,6 +78,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scanner.cs" />
     <Compile Include="ScannerError.cs" />
+    <Compile Include="Symbol.cs" />
+    <Compile Include="SymbolTable.cs" />
     <Compile Include="Token.cs" />
     <Compile Include="TokenKind.cs" />
   </ItemGroup>

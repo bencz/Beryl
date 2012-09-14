@@ -8,8 +8,22 @@ namespace Beryl.AST
     public class FunctionDeclaration: Declaration
     {
         private string _name;
+        public string Name
+        {
+            get { return _name; }
+        }
+
         private Parameter[] _parameters;
+        public Parameter[] Parameters
+        {
+            get { return _parameters; }
+        }
+
         private Expression _body;
+        public Expression Body
+        {
+            get { return _body; }
+        }
 
         public FunctionDeclaration(string name, Parameter[] parameters, Expression body)
         {
@@ -19,6 +33,11 @@ namespace Beryl.AST
                 parameter.Parent = this;
             _body = body;
             _body.Parent = this;
+        }
+
+        public override void visit(Visitor that)
+        {
+            that.visit(this);
         }
     }
 }

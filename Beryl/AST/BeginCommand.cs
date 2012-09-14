@@ -7,12 +7,21 @@ namespace Beryl.AST
 {
     public class BeginCommand: Command
     {
-        private Commands _command;
-
-        public BeginCommand(Commands command)
+        private Commands _commands;
+        public Commands Commands
         {
-            _command = command;
-            _command.Parent = this;
+            get { return _commands; }
+        }
+
+        public BeginCommand(Commands commands)
+        {
+            _commands = commands;
+            _commands.Parent = this;
+        }
+
+        public override void visit(Visitor that)
+        {
+            that.visit(this);
         }
     }
 }

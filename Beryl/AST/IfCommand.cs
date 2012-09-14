@@ -8,8 +8,22 @@ namespace Beryl.AST
     public class IfCommand: Command
     {
         Expression _expression;
+        public Expression Expression
+        {
+            get { return _expression; }
+        }
+
         Command _if;
+        public Command If
+        {
+            get { return _if; }
+        }
+
         Command _else;
+        public Command Else
+        {
+            get { return _else; }
+        }
 
         public IfCommand(Expression expression, Command @if, Command @else)
         {
@@ -19,6 +33,11 @@ namespace Beryl.AST
             _if.Parent = this;
             _else = @else;
             _else.Parent = this;
+        }
+
+        public override void visit(Visitor that)
+        {
+            that.visit(this);
         }
     }
 }

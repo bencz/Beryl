@@ -8,7 +8,16 @@ namespace Beryl.AST
     public class LetCommand: Command
     {
         private Declaration[] _declarations;
+        public Declaration[] Declarations
+        {
+            get { return _declarations; }
+        }
+
         private Command _command;
+        public Command Command
+        {
+            get { return _command; }
+        }
 
         public LetCommand(Declaration[] declarations, Command command)
         {
@@ -17,6 +26,11 @@ namespace Beryl.AST
                 declaration.Parent = this;
             _command = command;
             _command.Parent = this;
+        }
+
+        public override void visit(Visitor v)
+        {
+            v.visit(this);
         }
     }
 }

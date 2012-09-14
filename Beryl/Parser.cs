@@ -18,11 +18,13 @@ namespace Beryl
 {
     public class Parser
     {
+        private SymbolTable _symbols;
         private Scanner _scanner;
         private Token _lookahead;
 
-        public Parser(Scanner scanner)
+        public Parser(SymbolTable symbols, Scanner scanner)
         {
+            _symbols = symbols;
             _scanner = scanner;
 
             _lookahead = _scanner.ReadToken();
@@ -143,7 +145,6 @@ namespace Beryl
         {
             Match(TokenKind.Keyword_Const);
             Token name = Match(TokenKind.Identifier);
-            Match(TokenKind.Tilde);
             Expression expression = ParseExpression();
             return new ConstDeclaration(name.Text, expression);
         }
@@ -216,7 +217,6 @@ namespace Beryl
 
             return first;
         }
-
 
         private Command ParseIfCommand()
         {

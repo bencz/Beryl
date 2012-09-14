@@ -49,10 +49,13 @@ namespace Beryl
             sr.Close();
             Console.ReadLine();
 #else
+            SymbolTable symbols = new SymbolTable();
             StreamReader reader = new StreamReader(args[0]);
             Scanner scanner = new Scanner(args[0], reader, 4);
-            Parser parser = new Parser(scanner);
+            Parser parser = new Parser(symbols, scanner);
             AST.Program program = parser.ParseProgram();
+            new CodeGen(symbols, program);
+            Console.WriteLine("Press ENTER");
             Console.ReadLine();
 #endif
         }

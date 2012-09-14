@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Beryl.AST
 {
-    public class Node
+    public abstract class Node
     {
         private Node _parent;
         public Node Parent
@@ -17,5 +17,7 @@ namespace Beryl.AST
         public Node()
         {
         }
+
+        public abstract void visit(Visitor that);
     }
 }

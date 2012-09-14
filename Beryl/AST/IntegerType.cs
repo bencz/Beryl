@@ -5,12 +5,11 @@ using System.Text;
 
 namespace Beryl.AST
 {
-    public abstract class Expression: Node
+    public class IntegerType: Type
     {
-        public Expression()
+        public override void visit(Visitor that)
         {
+            that.visit(this);
         }
-
-        public abstract int Evaluate(SymbolTable symbols);
     }
 }
