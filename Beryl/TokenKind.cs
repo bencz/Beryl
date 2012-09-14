@@ -12,7 +12,8 @@ namespace Beryl
         Assignment,                     // ,=
         Asterisk,                       // *
         Backslash,                      // \
-        Colon,                          // ,
+        Colon,                          // :
+		Comma,							// ,
         EndOfFile,
         Equal,                          // = 
         GreaterThan,                    // >
@@ -40,3 +41,4 @@ namespace Beryl
         Tilde                           // ~
     }
 }
+

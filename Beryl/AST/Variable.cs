@@ -22,7 +22,7 @@ namespace Beryl.AST
         public override int Evaluate(SymbolTable symbols)
         {
             Symbol symbol = symbols.Lookup(new Position(), _name);
-			return 0;  // todo: finish up Variable.Evaluate()
+			return symbol.Value;
         }
 
         public override void visit(Visitor that)

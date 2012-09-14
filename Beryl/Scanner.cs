@@ -38,6 +38,7 @@ namespace Beryl
             _keywords["const"] = TokenKind.Keyword_Const;
             _keywords["do"] = TokenKind.Keyword_Do;
             _keywords["else"] = TokenKind.Keyword_Else;
+			_keywords["func"] = TokenKind.Keyword_Func;
             _keywords["end"] = TokenKind.Keyword_End;
             _keywords["if"] = TokenKind.Keyword_If;
             _keywords["in"] = TokenKind.Keyword_In;
@@ -130,6 +131,10 @@ namespace Beryl
 
                     result.Kind = TokenKind.Colon;
                     break;
+
+				case ',':
+					result.Kind = TokenKind.Comma;
+					break;
 
                 case '~':
                     result.Kind = TokenKind.Tilde;

@@ -13,10 +13,9 @@ namespace Beryl.AST
         void visit(CallCommand that);
         void visit(Commands that);
         void visit(ConstDeclaration that);
-        void visit(Declaration that);
         void visit(Declarations that);
-        void visit(Expression that);
         void visit(FunctionDeclaration that);
+		void visit(FunctionExpression that);
         void visit(IfCommand that);
         void visit(IntegerLiteral that);
         void visit(IntegerType that);

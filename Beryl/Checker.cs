@@ -20,7 +20,6 @@ namespace Beryl
 
         public void visit(AssignCommand that)
         {
-            // we must explicitly walk all children of all nodes...
             that.Expression.visit(this);
         }
 
@@ -31,14 +30,16 @@ namespace Beryl
 
         public void visit(BinaryExpression that)
         {
+			that.First.visit(this);
+			that.Other.visit(this);
         }
 
         public void visit(CallCommand that)
         {
+			// note: leave the checking of the identifier to the code generator as it knows what symbols it supports
             that.Expression.visit(this); 
         }
 
-        /* This is the second tree-walking method that is called! */
         public void visit(Commands that)
         {
             foreach (Command command in that.CommandArray)
@@ -48,25 +49,28 @@ namespace Beryl
         public void visit(ConstDeclaration that)
         {
             int value = that.Expression.Evaluate(_symbols);
-            Symbol symbol = new Symbol(that.Position, that.Identifier, new  IntegerType(that.Expression.Position), 0);
+            Symbol symbol = new Symbol(that.Position, that.Identifier, new IntegerType(that.Expression.Position), value);
             _symbols.Insert(that.Position, that.Identifier, symbol);
-        }
-
-        public void visit(Declaration that)
-        {
         }
 
         public void visit(Declarations that)
         {
-        }
-
-        public void visit(Expression that)
-        {
+			foreach (Declaration declaration in that.DeclarationsArray)
+				declaration.visit(this);
         }
 
         public void visit(FunctionDeclaration that)
         {
+			foreach (Parameter parameter in that.Parameters)
+				parameter.visit(this);
+			that.Body.visit(this);
         }
+
+		public void visit(FunctionExpression that)
+		{
+			foreach (Expression argument in that.Arguments)
+				argument.visit(this);
+		}
 
         public void visit(IfCommand that)
         {
@@ -93,25 +97,29 @@ namespace Beryl
 
         public void visit(Parameter that)
         {
+			if (that.Type != "integer")
+				throw new CheckerError(that.Position, "Unknown type: " + that.Type);
         }
 
         public void visit(Parenthesis that)
         {
+			that.Expression.visit(this);
         }
 
-        /* This is the first tree-walking method that is called! */
         public void visit(AST.Program that)
         {
-            /* process the Program node */
             that.Commands.visit(this);
         }
 
         public void visit(UnaryExpression that)
         {
+			that.Expression.visit(this);
         }
 
         public void visit(VarDeclaration that)
         {
+			if (that.Type != "integer")
+				throw new CheckerError(that.Position, "Unknown type: " + that.Type);
         }
 
         public void visit(Variable that)
@@ -120,6 +128,8 @@ namespace Beryl
 
         public void visit(WhileCommand that)
         {
+			that.Expression.visit(this);
+			that.Command.visit(this);
         }
     }
 }

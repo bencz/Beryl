@@ -1,10 +1,7 @@
-﻿/*
- * Issues:
- * 
- *    1. The syntax specifies that a command can be a sequence of commands, the parser does not yet handle this.
- *    
- * Declarations = Declaration | Declaration ";" Declaration .
- * Declaration  = "var" ... | "const" ... .
+﻿/**
+ * Issues: 
+ *  
+ *    1. Add parsing of function declaration. 
  */
 
 using System;
@@ -73,17 +70,17 @@ namespace Beryl
                 case TokenKind.Identifier:
                     return ParseAssignOrCallCommand();
 
+                case TokenKind.Keyword_Begin:
+                    return ParseBeginCommand();
+
                 case TokenKind.Keyword_If:
                     return ParseIfCommand();
-
-                case TokenKind.Keyword_While:
-                    return ParseWhileCommand();
 
                 case TokenKind.Keyword_Let:
                     return ParseLetCommand();
 
-                case TokenKind.Keyword_Begin:
-                    return ParseBeginCommand();
+                case TokenKind.Keyword_While:
+                    return ParseWhileCommand();
 
                 default:
                     throw new ParserError(_lookahead.Position, "Unexpected token: " + _lookahead.ToString());
@@ -165,13 +162,18 @@ namespace Beryl
                         declarations.Add(declaration);
                         break;
 
+					case TokenKind.Keyword_Func:
+						declaration = ParseFuncDeclaration();
+						declarations.Add(declaration);
+						break;
+
                     case TokenKind.Keyword_Var:
                         declaration = ParseVarDeclaration();
                         declarations.Add(declaration);
                         break;
 
                     default:
-                        throw new ParserError(_lookahead.Position, "Expected 'const' or 'var' declaration");
+                        throw new ParserError(_lookahead.Position, "Expected 'const', 'func', or 'var' declaration");
                 }
 
                 if (_lookahead.Kind != TokenKind.Semicolon)
@@ -193,7 +195,21 @@ namespace Beryl
 
                 case TokenKind.Identifier:
                     token = Match(TokenKind.Identifier);
-                    return new Variable(token.Position, token.Text);
+					if (_lookahead.Kind != TokenKind.LeftParenthesis)
+						return new Variable(token.Position, token.Text);
+					// parse function invokation
+					Match(TokenKind.LeftParenthesis);
+					List<Expression> arguments = new List<Expression>();
+					for (;;)
+					{
+						arguments.Add(ParseExpression());
+
+						if (_lookahead.Kind != TokenKind.Comma)
+							break;
+						Match(TokenKind.Comma);
+					}
+					Match(TokenKind.RightParenthesis);
+					return new FunctionExpression(token.Position, token.Text, arguments.ToArray());
 
                 case TokenKind.Plus:
                 case TokenKind.Minus:
@@ -220,6 +236,42 @@ namespace Beryl
 
             return first;
         }
+
+		private Declaration ParseFuncDeclaration()
+		{
+			Token start = Match(TokenKind.Keyword_Func);
+			string identifier = Match(TokenKind.Identifier).Text;
+
+			// parse parameter list
+			Match(TokenKind.LeftParenthesis);
+			List<Parameter> parameters = new List<Parameter>();
+			for (;;)
+			{
+				Token name = Match(TokenKind.Identifier);
+				Match(TokenKind.Colon);
+				Token type = Match(TokenKind.Identifier);
+				if (type.Text != "Integer")
+					throw new ParserError(type.Position, "Unknown type encountered: " + type.Text);
+				parameters.Add(new Parameter(name.Position, name.Text, type.Text));
+
+				if (_lookahead.Kind != TokenKind.Comma)
+					break;
+
+				Match(TokenKind.Comma);
+			}
+			Match(TokenKind.RightParenthesis);
+
+			// parse return type specification
+			Match(TokenKind.Colon);
+			Token returnType = Match(TokenKind.Identifier);
+			if (returnType.Text != "Integer")
+				throw new ParserError(returnType.Position, "Unknown type encountered: " + returnType.Text);
+
+			Match(TokenKind.Tilde);
+			Expression body = ParseExpression();
+
+			return new FunctionDeclaration(start.Position, identifier, parameters.ToArray(), body);
+		}
 
         private Command ParseIfCommand()
         {
