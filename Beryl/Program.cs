@@ -30,34 +30,55 @@ using System.IO;
 
 namespace Beryl
 {
-    
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
-#if false
-            StreamReader sr = new StreamReader(args[0]);
-            Scanner scanner = new Scanner(args[0], sr, 4);
-            for (; ; )
-            {
-                Token token = scanner.ReadToken();
-                Console.WriteLine(token.Position.ToString() + ":" + token.ToString());
+			int result = 0;
 
-                if (token.Kind == TokenKind.EndOfFile)
-                    break;
-            }
-            sr.Close();
-            Console.ReadLine();
+			try
+			{
+#if false
+				StreamReader sr = new StreamReader(args[0]);
+				Scanner scanner = new Scanner(args[0], sr, 4);
+				for (; ; )
+				{
+					Token token = scanner.ReadToken();
+					Console.WriteLine(token.Position.ToString() + ":" + token.ToString());
+
+					if (token.Kind == TokenKind.EndOfFile)
+						break;
+				}
+				sr.Close();
+				Console.ReadLine();
 #else
-            SymbolTable symbols = new SymbolTable();
-            StreamReader reader = new StreamReader(args[0]);
-            Scanner scanner = new Scanner(args[0], reader, 4);
-            Parser parser = new Parser(symbols, scanner);
-            AST.Program program = parser.ParseProgram();
-            new CodeGen(symbols, program);
-            Console.WriteLine("Press ENTER");
-            Console.ReadLine();
+				SymbolTable symbols = new SymbolTable();
+				StreamReader reader = new StreamReader(args[0]);
+				Scanner scanner = new Scanner(args[0], reader, 4);
+				Parser parser = new Parser(symbols, scanner);
+				AST.Program program = parser.ParseProgram();
+				new CodeGen(symbols, program);
+				Console.WriteLine("Press ENTER");
+				Console.ReadLine();
 #endif
+			}
+			catch (CoderError that)
+			{
+				Console.WriteLine("{0} Error: {1}", that.Position.ToString(), that.Message);
+				result = 1;
+			}
+			catch (ParserError that)
+			{
+				Console.WriteLine("{0} Error: {1}", that.Position.ToString(), that.Message);
+				result = 1;
+			}
+			catch (ScannerError that)
+			{
+				Console.WriteLine("{0} Error: {1}", that.Position.ToString(), that.Message);
+				result = 1;
+			}
+
+			return result;
         }
     }
 }

@@ -13,15 +13,16 @@ namespace Beryl.AST
             get { return _name; }
         }
 
-        public Variable(string name)
+        public Variable(Position position, string name):
+			base(position)
         {
             _name = name;
         }
 
         public override int Evaluate(SymbolTable symbols)
         {
-            AST.Type type = symbols.Lookup(new Position(), _name);
-
+            Symbol symbol = symbols.Lookup(new Position(), _name);
+			return 0;  // todo: finish up Variable.Evaluate()
         }
 
         public override void visit(Visitor that)

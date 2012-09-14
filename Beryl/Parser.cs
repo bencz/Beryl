@@ -104,13 +104,13 @@ namespace Beryl
                 case TokenKind.Assignment:      // an assignment statement
                     Match(TokenKind.Assignment);
                     expression = ParseExpression();
-                    return new AssignCommand(name.Text, expression);
+                    return new AssignCommand(name.Position, name.Text, expression);
                     
                 case TokenKind.LeftParenthesis: // a procedure call
                     Match(TokenKind.LeftParenthesis);
                     expression = ParseExpression();
                     Match(TokenKind.RightParenthesis);
-                    return new CallCommand(name.Text, expression);
+                    return new CallCommand(name.Position, name.Text, expression);
 
                 default:
                     throw new ParserError(_lookahead.Position, "Unexpected token: " + _lookahead.ToString());
@@ -119,14 +119,16 @@ namespace Beryl
 
         private Command ParseBeginCommand()
         {
-            Match(TokenKind.Keyword_Begin);
+            Token start = Match(TokenKind.Keyword_Begin);
             Commands commands = ParseCommands();
             Match(TokenKind.Keyword_End);
-            return new BeginCommand(commands);
+            return new BeginCommand(start.Position, commands);
         }
 
         private Commands ParseCommands()
         {
+			Token start = _lookahead;
+
             List<Command> commands = new List<Command>();
             for (;;)
             {
@@ -138,21 +140,22 @@ namespace Beryl
                 Match(TokenKind.Semicolon);
             }
 
-            return new Commands(commands.ToArray());
+            return new Commands(start.Position, commands.ToArray());
         }
 
         private Declaration ParseConstDeclaration()
         {
-            Match(TokenKind.Keyword_Const);
+            Token start = Match(TokenKind.Keyword_Const);
             Token name = Match(TokenKind.Identifier);
+			Match(TokenKind.Tilde);
             Expression expression = ParseExpression();
-            return new ConstDeclaration(name.Text, expression);
+            return new ConstDeclaration(start.Position, name.Text, expression);
         }
 
         private Declaration[] ParseDeclaration()
         {
             List<Declaration> declarations = new List<Declaration>();
-            for (; ; )
+            for (;;)
             {
                 Declaration declaration;
                 switch (_lookahead.Kind)
@@ -186,17 +189,17 @@ namespace Beryl
             {
                 case TokenKind.Literal_Integer:
                     token = Match(TokenKind.Literal_Integer);
-                    return new IntegerLiteral(int.Parse(token.Text));
+                    return new IntegerLiteral(token.Position, int.Parse(token.Text));
 
                 case TokenKind.Identifier:
                     token = Match(TokenKind.Identifier);
-                    return new Variable(token.Text);
+                    return new Variable(token.Position, token.Text);
 
                 case TokenKind.Plus:
                 case TokenKind.Minus:
                     token = ReadToken();
                     Operator @operator = TokenKindToOperator(token.Position, token.Kind);
-                    return new UnaryExpression(@operator, ParseExpression());
+                    return new UnaryExpression(token.Position, @operator, ParseExpression());
 
                 default:
                     throw new ParserError(_lookahead.Position, "Expected integer literal, identifier or unary operator");
@@ -212,7 +215,7 @@ namespace Beryl
                 Operator @operator = TokenKindToOperator(token.Position, token.Kind);
                 Expression other = ParseExpressionAtom();
 
-                first = new BinaryExpression(first, @operator, other);
+                first = new BinaryExpression(first.Position, first, @operator, other);
             }
 
             return first;
@@ -220,40 +223,40 @@ namespace Beryl
 
         private Command ParseIfCommand()
         {
-            Match(TokenKind.Keyword_If);
+            Token start = Match(TokenKind.Keyword_If);
             Expression expression = ParseExpression();
             Match(TokenKind.Keyword_Then);
             Command @if = ParseCommand();
             Match(TokenKind.Keyword_Else);
             Command @else = ParseCommand();
-            return new IfCommand(expression, @if, @else);
+            return new IfCommand(start.Position, expression, @if, @else);
         }
 
         private Command ParseLetCommand()
         {
-            Match(TokenKind.Keyword_Let);
+            Token start = Match(TokenKind.Keyword_Let);
             Declaration[] declarations = ParseDeclaration();
             Match(TokenKind.Keyword_In);
             Command command = ParseCommand();
-            return new LetCommand(declarations, command);
+            return new LetCommand(start.Position, declarations, command);
         }
 
         private Declaration ParseVarDeclaration()
         {
-            Match(TokenKind.Keyword_Var);
+            Token start = Match(TokenKind.Keyword_Var);
             Token name = Match(TokenKind.Identifier);
             Match(TokenKind.Colon);
             Token type = Match(TokenKind.Identifier);
-            return new VarDeclaration(name.Text, type.Text);
+            return new VarDeclaration(start.Position, name.Text, type.Text);
         }
 
         private Command ParseWhileCommand()
         {
-            Match(TokenKind.Keyword_While);
+            Token start = Match(TokenKind.Keyword_While);
             Expression expression = ParseExpression();
             Match(TokenKind.Keyword_Do);
             Command command = ParseCommand();
-            return new WhileCommand(expression, command);
+            return new WhileCommand(start.Position, expression, command);
         }
 
         /*
@@ -261,8 +264,9 @@ namespace Beryl
          */
         public AST.Program ParseProgram()
         {
+			Token start = _lookahead;
             Commands commands = ParseCommands();
-            return new AST.Program(commands);
+            return new AST.Program(start.Position, commands);
         }
 
         private Operator TokenKindToOperator(Position position, TokenKind kind)

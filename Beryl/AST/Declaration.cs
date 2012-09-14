@@ -7,5 +7,9 @@ namespace Beryl.AST
 {
     public abstract class Declaration: Node
     {
+		public Declaration(Position position):
+			base(position)
+		{
+		}
     }
 }

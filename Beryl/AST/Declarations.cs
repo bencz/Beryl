@@ -13,7 +13,8 @@ namespace Beryl.AST
             get { return _declarations; }
         }
 
-        public Declarations(Declaration[] declarations)
+        public Declarations(Position position, Declaration[] declarations):
+			base(position)
         {
             _declarations = declarations;
             foreach (Declaration declaration in _declarations)

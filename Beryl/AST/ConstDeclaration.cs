@@ -19,7 +19,8 @@ namespace Beryl.AST
             get { return _expression; }
         }
 
-        public ConstDeclaration(string identifier, Expression expression)
+        public ConstDeclaration(Position position, string identifier, Expression expression):
+			base(position)
         {
             _identifier = identifier;
             _expression = expression;

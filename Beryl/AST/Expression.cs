@@ -7,7 +7,8 @@ namespace Beryl.AST
 {
     public abstract class Expression: Node
     {
-        public Expression()
+        public Expression(Position position):
+			base(position)
         {
         }
 

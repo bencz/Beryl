@@ -13,7 +13,8 @@ namespace Beryl.AST
             get { return _commands; }
         }
 
-        public BeginCommand(Commands commands)
+        public BeginCommand(Position position, Commands commands):
+			base(position)
         {
             _commands = commands;
             _commands.Parent = this;

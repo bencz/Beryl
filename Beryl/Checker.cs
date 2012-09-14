@@ -47,9 +47,9 @@ namespace Beryl
 
         public void visit(ConstDeclaration that)
         {
-            int value = that.Expression.Evalute(_symbols);
-            Symbol symbol = new Symbol(new Position(), that.Identifier, 
-            _symbols.Insert(new Position(), that.Identifier, new IntegerType());
+            int value = that.Expression.Evaluate(_symbols);
+            Symbol symbol = new Symbol(that.Position, that.Identifier, new  IntegerType(that.Expression.Position), 0);
+            _symbols.Insert(that.Position, that.Identifier, symbol);
         }
 
         public void visit(Declaration that)

@@ -14,8 +14,15 @@ namespace Beryl.AST
             set { _parent = value; }
         }
 
-        public Node()
+		private Position _position;
+		public Position Position
+		{
+			get { return _position; }
+		}
+
+        public Node(Position position)
         {
+			_position = position;
         }
 
         public abstract void visit(Visitor that);

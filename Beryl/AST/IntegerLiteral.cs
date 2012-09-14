@@ -13,7 +13,8 @@ namespace Beryl.AST
             get { return _value; }
         }
 
-        public IntegerLiteral(int value)
+        public IntegerLiteral(Position position, int value):
+			base(position)
         {
             _value = value;
         }

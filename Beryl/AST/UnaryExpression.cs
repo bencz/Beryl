@@ -19,7 +19,8 @@ namespace Beryl.AST
             get { return _expression; }
         }
 
-        public UnaryExpression(Operator @operator, Expression expression)
+        public UnaryExpression(Position position, Operator @operator, Expression expression):
+			base(position)
         {
             _operator = @operator;
             _expression = expression;

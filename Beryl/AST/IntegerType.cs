@@ -7,6 +7,11 @@ namespace Beryl.AST
 {
     public class IntegerType: Type
     {
+		public IntegerType(Position position):
+			base(position)
+		{
+		}
+
         public override void visit(Visitor that)
         {
             that.visit(this);

@@ -13,7 +13,8 @@ namespace Beryl.AST
             get { return _commands; }
         }
 
-        public Commands(Command[] commands)
+        public Commands(Position position, Command[] commands):
+			base(position)
         {
             _commands = commands;
             foreach (Command command in _commands)

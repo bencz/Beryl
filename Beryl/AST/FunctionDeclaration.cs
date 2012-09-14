@@ -25,7 +25,8 @@ namespace Beryl.AST
             get { return _body; }
         }
 
-        public FunctionDeclaration(string name, Parameter[] parameters, Expression body)
+        public FunctionDeclaration(Position position, string name, Parameter[] parameters, Expression body):
+			base(position)
         {
             _name = name;
             _parameters = parameters;

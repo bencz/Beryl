@@ -19,7 +19,8 @@ namespace Beryl.AST
             get { return _type; }
         }
 
-        public VarDeclaration(string identifier, string type)
+        public VarDeclaration(Position position, string identifier, string type):
+			base(position)
         {
             _identifier = identifier;
             _type = type;

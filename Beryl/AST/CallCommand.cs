@@ -19,7 +19,8 @@ namespace Beryl.AST
             get { return _expression; }
         }
 
-        public CallCommand(string identifier, Expression expression)
+        public CallCommand(Position position, string identifier, Expression expression):
+			base(position)
         {
             _identifier = identifier;
             _expression = expression;

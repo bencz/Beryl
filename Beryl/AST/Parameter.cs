@@ -19,7 +19,8 @@ namespace Beryl.AST
             get { return _type; }
         }
 
-        public Parameter(string name, string type)
+        public Parameter(Position position, string name, string type):
+			base(position)
         {
             _name = name;
             _type = type;

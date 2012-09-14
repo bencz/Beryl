@@ -19,7 +19,8 @@ namespace Beryl.AST
             get { return _command; }
         }
 
-        public LetCommand(Declaration[] declarations, Command command)
+        public LetCommand(Position position, Declaration[] declarations, Command command):
+			base(position)
         {
             _declarations = declarations;
             foreach (Declaration declaration in _declarations)

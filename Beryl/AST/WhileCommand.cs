@@ -19,7 +19,8 @@ namespace Beryl.AST
             get { return _command; }
         }
 
-        public WhileCommand(Expression expression, Command command)
+        public WhileCommand(Position position, Expression expression, Command command):
+			base(position)
         {
             _expression = expression;
             _expression.Parent = this;

@@ -13,7 +13,8 @@ namespace Beryl.AST
             get { return _expression; }
         }
 
-        public Parenthesis(Expression expression)
+        public Parenthesis(Position position, Expression expression):
+			base(position)
         {
             _expression = expression;
             _expression.Parent = this;

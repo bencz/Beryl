@@ -25,7 +25,8 @@ namespace Beryl.AST
             get { return _else; }
         }
 
-        public IfCommand(Expression expression, Command @if, Command @else)
+        public IfCommand(Position position, Expression expression, Command @if, Command @else):
+			base(position)
         {
             _expression = expression;
             _expression.Parent = this;

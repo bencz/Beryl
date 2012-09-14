@@ -25,7 +25,8 @@ namespace Beryl.AST
             get { return _other; }
         }
 
-        public BinaryExpression(Expression first, Operator @operator, Expression other)
+        public BinaryExpression(Position position, Expression first, Operator @operator, Expression other):
+			base(position)
         {
             _first = first;
             _first.Parent = this;

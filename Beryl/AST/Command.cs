@@ -7,7 +7,8 @@ namespace Beryl.AST
 {
     public abstract class Command : Node
     {
-        public Command()
+        public Command(Position position):
+			base(position)
         {
         }
     }
