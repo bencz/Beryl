@@ -87,11 +87,18 @@ namespace Beryl
         {
         }
 
-		public void visit(FunctionExpression that)
-		{
-			foreach (Expression argument in that.Arguments)
-				argument.visit(this);
-		}
+        public void visit(FunctionExpression that)
+        {
+            foreach (Expression argument in that.Arguments)
+                argument.visit(this);
+        }
+
+        public void visit(FunctionType that)
+        {
+            foreach (Parameter parameter in that.Parameters)
+                parameter.visit(this);
+            that.Body.visit(this);
+        }
 
         public void visit(IfCommand that)
         {

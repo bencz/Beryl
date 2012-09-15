@@ -1,0 +1,8 @@
+let
+    var a : Integer;
+    func a(b : Integer) : Integer ~
+        b + 1
+in
+    putint(a)
+
+

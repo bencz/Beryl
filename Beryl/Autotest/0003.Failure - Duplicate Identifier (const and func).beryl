@@ -1,0 +1,8 @@
+let
+    const a ~ 1;
+    func a(b : Integer) : Integer ~
+        b * 2
+in
+    putint(a)
+
+

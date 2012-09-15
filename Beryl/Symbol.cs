@@ -13,6 +13,12 @@ namespace Beryl
             get { return _position; }
         }
 
+        private SymbolKind _kind;
+        public SymbolKind Kind
+        {
+            get { return _kind; }
+        }
+
         private string _name;
         public string Name
         {
@@ -36,23 +42,31 @@ namespace Beryl
         public ulong Address
         {
             get { return _address; }
+            set { _address = value; }
         }
 
-        public Symbol(Position position, string name, AST.Type type, int value)
+        // var or func declaration (.Address is set by the code generator)
+        public Symbol(Position position, SymbolKind kind, string name, AST.Type type)
         {
             _position = position;
+            _kind = kind;
+            _name = name;
+            _type = type;
+            _value = 0;
+            _address = 0;
+        }
+
+        // const declaration
+        public Symbol(Position position, SymbolKind kind, string name, AST.Type type, int value)
+        {
+            if (kind != SymbolKind.Constant)
+                throw new System.Exception("Only constant symbols can have a value");
+
+            _position = position;
+            _kind = kind;
             _name = name;
             _type = type;
             _value = value;
-        }
-
-        public Symbol(Position position, string name, AST.Type type, int value, ulong address = 0)
-        {
-            _position = position;
-            _name = name;
-            _type = type;
-            _value = value;
-            _address = address;
         }
     }
 }

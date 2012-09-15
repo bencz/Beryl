@@ -1,0 +1,6 @@
+let
+    const a ~ 1;
+    var a : Integer
+in
+    putint(a)
+

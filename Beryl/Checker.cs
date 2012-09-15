@@ -15,11 +15,54 @@ namespace Beryl
         {
             _symbols = symbols;
             _program = program;
+
+            // enter the predefined functions (getint and putint) into the symbol table
+            Position position = new Position("(library)", 0, 0);
+            AST.Type type = new FunctionType(
+                position,
+                new IntegerType(position),
+                new Parameter[] { new Parameter(position, "value", new IntegerType(position))},
+                null        // note: the code generator must handle these predefined functions so no body is defined
+            );
+            Symbol symbol = new Symbol(position, SymbolKind.Function, "getint", type);
+            _symbols.Insert(position, "getint", symbol);
+
+            type = new FunctionType(
+                position,
+                new IntegerType(position),
+                new Parameter[] { new Parameter(position, "value", new IntegerType(position))},
+                null        // note: the code generator must handle these predefined functions so no body is defined
+            );
+            symbol = new Symbol(position, SymbolKind.Function, "putint", type);
+            _symbols.Insert(position, "putint", symbol);
+
             _program.visit(this);
         }
 
         public void visit(AssignCommand that)
         {
+            // check that the symbol exists - by trying to look it up
+            Symbol symbol = _symbols.Lookup(that.Position, that.Name);
+
+            // check that the symbol is indeed a variable
+            switch (symbol.Kind)
+            {
+                case SymbolKind.Constant:
+                    throw new CheckerError(symbol.Position, "Cannot assign to a constant");
+
+                case SymbolKind.Function:
+                    throw new CheckerError(symbol.Position, "Cannot assign to a function");
+
+                case SymbolKind.Variable:
+                    break;
+
+                default:
+                    throw new CheckerError(symbol.Position, "Unknown symbol kind: " + symbol.Kind.ToString());
+            }
+
+            // nothing more to check as we support only integers
+            // todo: evaluate the type of the rhs and check that the variable has the same type
+
             that.Expression.visit(this);
         }
 
@@ -30,14 +73,29 @@ namespace Beryl
 
         public void visit(BinaryExpression that)
         {
-			that.First.visit(this);
-			that.Other.visit(this);
+            that.First.visit(this);
+            that.Other.visit(this);
         }
 
         public void visit(CallCommand that)
         {
-			// note: leave the checking of the identifier to the code generator as it knows what symbols it supports
-            that.Expression.visit(this); 
+            Symbol symbol = _symbols.Lookup(that.Position, that.Identifier);
+            switch (symbol.Kind)
+            {
+                case SymbolKind.Constant:
+                    throw new CheckerError(that.Position, "Cannot invoke constant");
+
+                case SymbolKind.Function:
+                    break;
+
+                case SymbolKind.Variable:
+                    throw new CheckerError(that.Position, "Cannot invoke variable");
+
+                default:
+                    throw new CheckerError(symbol.Position, "Unknown symbol kind: " + symbol.Kind.ToString());
+            }
+
+            that.Expression.visit(this);
         }
 
         public void visit(Commands that)
@@ -49,28 +107,36 @@ namespace Beryl
         public void visit(ConstDeclaration that)
         {
             int value = that.Expression.Evaluate(_symbols);
-            Symbol symbol = new Symbol(that.Position, that.Identifier, new IntegerType(that.Expression.Position), value);
+            Symbol symbol = new Symbol(that.Position, SymbolKind.Constant, that.Identifier, that.Type, value);
             _symbols.Insert(that.Position, that.Identifier, symbol);
         }
 
         public void visit(Declarations that)
         {
-			foreach (Declaration declaration in that.DeclarationsArray)
-				declaration.visit(this);
+            foreach (Declaration declaration in that.DeclarationsArray)
+                declaration.visit(this);
         }
 
         public void visit(FunctionDeclaration that)
         {
-			foreach (Parameter parameter in that.Parameters)
-				parameter.visit(this);
-			that.Body.visit(this);
+            Symbol symbol = new Symbol(that.Position, SymbolKind.Function, that.Name, that.Type);
+            _symbols.Insert(that.Position, that.Name, symbol);
+            that.Type.visit(this);
         }
 
-		public void visit(FunctionExpression that)
-		{
-			foreach (Expression argument in that.Arguments)
-				argument.visit(this);
-		}
+        public void visit(FunctionExpression that)
+        {
+            foreach (Expression argument in that.Arguments)
+                argument.visit(this);
+        }
+
+        public void visit(FunctionType that)
+        {
+            that.Type.visit(this);
+            foreach (Parameter parameter in that.Parameters)
+                parameter.visit(this);
+            that.Body.visit(this);
+        }
 
         public void visit(IfCommand that)
         {
@@ -97,13 +163,11 @@ namespace Beryl
 
         public void visit(Parameter that)
         {
-			if (that.Type != "integer")
-				throw new CheckerError(that.Position, "Unknown type: " + that.Type);
         }
 
         public void visit(Parenthesis that)
         {
-			that.Expression.visit(this);
+            that.Expression.visit(this);
         }
 
         public void visit(AST.Program that)
@@ -113,23 +177,24 @@ namespace Beryl
 
         public void visit(UnaryExpression that)
         {
-			that.Expression.visit(this);
+            that.Expression.visit(this);
         }
 
         public void visit(VarDeclaration that)
         {
-			if (that.Type != "integer")
-				throw new CheckerError(that.Position, "Unknown type: " + that.Type);
+            Symbol symbol = new Symbol(that.Position, SymbolKind.Variable, that.Identifier, that.Type);
+            _symbols.Insert(that.Position, that.Identifier, symbol);
         }
 
         public void visit(Variable that)
         {
+
         }
 
         public void visit(WhileCommand that)
         {
-			that.Expression.visit(this);
-			that.Command.visit(this);
+            that.Expression.visit(this);
+            that.Command.visit(this);
         }
     }
 }

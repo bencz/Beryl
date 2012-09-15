@@ -13,17 +13,19 @@ namespace Beryl.AST
             get { return _name; }
         }
 
-        private string _type;
-        public string Type
+        private AST.Type _type;
+        public AST.Type Type
         {
             get { return _type; }
         }
 
-        public Parameter(Position position, string name, string type):
-			base(position)
+        public Parameter(Position position, string name, AST.Type type):
+            base(position)
         {
             _name = name;
+
             _type = type;
+            _type.Parent = this;
         }
 
         public override void visit(Visitor that)

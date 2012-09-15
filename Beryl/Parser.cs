@@ -1,7 +1,7 @@
 ﻿/**
- * Issues: 
- *  
- *    1. Add parsing of function declaration. 
+ * Issues:
+ *
+ *    1. Add parsing of function declaration.
  */
 
 using System;
@@ -46,20 +46,20 @@ namespace Beryl
         {
             switch (kind)
             {
-                case TokenKind.Asterisk: 
+                case TokenKind.Asterisk:
                 case TokenKind.Backslash:
                 case TokenKind.Equal:
                 case TokenKind.GreaterThan:
                 case TokenKind.LessThan:
                 case TokenKind.Minus:
-                case TokenKind.Plus: 
+                case TokenKind.Plus:
                     return true;
 
                 default:
                     return false;
             }
         }
- 
+
         /*
          * Parses a single command.
          */
@@ -102,7 +102,7 @@ namespace Beryl
                     Match(TokenKind.Assignment);
                     expression = ParseExpression();
                     return new AssignCommand(name.Position, name.Text, expression);
-                    
+
                 case TokenKind.LeftParenthesis: // a procedure call
                     Match(TokenKind.LeftParenthesis);
                     expression = ParseExpression();
@@ -124,7 +124,7 @@ namespace Beryl
 
         private Commands ParseCommands()
         {
-			Token start = _lookahead;
+            Token start = _lookahead;
 
             List<Command> commands = new List<Command>();
             for (;;)
@@ -144,9 +144,10 @@ namespace Beryl
         {
             Token start = Match(TokenKind.Keyword_Const);
             Token name = Match(TokenKind.Identifier);
-			Match(TokenKind.Tilde);
+            Match(TokenKind.Tilde);
             Expression expression = ParseExpression();
-            return new ConstDeclaration(start.Position, name.Text, expression);
+            // todo: deduce the type from the constant expression
+            return new ConstDeclaration(start.Position, name.Text, new IntegerType(expression.Position), expression);
         }
 
         private Declaration[] ParseDeclaration()
@@ -162,10 +163,10 @@ namespace Beryl
                         declarations.Add(declaration);
                         break;
 
-					case TokenKind.Keyword_Func:
-						declaration = ParseFuncDeclaration();
-						declarations.Add(declaration);
-						break;
+                    case TokenKind.Keyword_Func:
+                        declaration = ParseFuncDeclaration();
+                        declarations.Add(declaration);
+                        break;
 
                     case TokenKind.Keyword_Var:
                         declaration = ParseVarDeclaration();
@@ -195,21 +196,21 @@ namespace Beryl
 
                 case TokenKind.Identifier:
                     token = Match(TokenKind.Identifier);
-					if (_lookahead.Kind != TokenKind.LeftParenthesis)
-						return new Variable(token.Position, token.Text);
-					// parse function invokation
-					Match(TokenKind.LeftParenthesis);
-					List<Expression> arguments = new List<Expression>();
-					for (;;)
-					{
-						arguments.Add(ParseExpression());
+                    if (_lookahead.Kind != TokenKind.LeftParenthesis)
+                        return new Variable(token.Position, token.Text);
+                    // parse function invokation
+                    Match(TokenKind.LeftParenthesis);
+                    List<Expression> arguments = new List<Expression>();
+                    for (;;)
+                    {
+                        arguments.Add(ParseExpression());
 
-						if (_lookahead.Kind != TokenKind.Comma)
-							break;
-						Match(TokenKind.Comma);
-					}
-					Match(TokenKind.RightParenthesis);
-					return new FunctionExpression(token.Position, token.Text, arguments.ToArray());
+                        if (_lookahead.Kind != TokenKind.Comma)
+                            break;
+                        Match(TokenKind.Comma);
+                    }
+                    Match(TokenKind.RightParenthesis);
+                    return new FunctionExpression(token.Position, token.Text, arguments.ToArray());
 
                 case TokenKind.Plus:
                 case TokenKind.Minus:
@@ -237,41 +238,38 @@ namespace Beryl
             return first;
         }
 
-		private Declaration ParseFuncDeclaration()
-		{
-			Token start = Match(TokenKind.Keyword_Func);
-			string identifier = Match(TokenKind.Identifier).Text;
+        private Declaration ParseFuncDeclaration()
+        {
+            Token start = Match(TokenKind.Keyword_Func);
+            string identifier = Match(TokenKind.Identifier).Text;
 
-			// parse parameter list
-			Match(TokenKind.LeftParenthesis);
-			List<Parameter> parameters = new List<Parameter>();
-			for (;;)
-			{
-				Token name = Match(TokenKind.Identifier);
-				Match(TokenKind.Colon);
-				Token type = Match(TokenKind.Identifier);
-				if (type.Text != "Integer")
-					throw new ParserError(type.Position, "Unknown type encountered: " + type.Text);
-				parameters.Add(new Parameter(name.Position, name.Text, type.Text));
+            // parse parameter list
+            Match(TokenKind.LeftParenthesis);
+            List<Parameter> parameters = new List<Parameter>();
+            for (;;)
+            {
+                Token name = Match(TokenKind.Identifier);
+                Match(TokenKind.Colon);
+                AST.Type type = ParseType();
+                parameters.Add(new Parameter(name.Position, name.Text, type));
 
-				if (_lookahead.Kind != TokenKind.Comma)
-					break;
+                if (_lookahead.Kind != TokenKind.Comma)
+                    break;
 
-				Match(TokenKind.Comma);
-			}
-			Match(TokenKind.RightParenthesis);
+                Match(TokenKind.Comma);
+            }
+            Match(TokenKind.RightParenthesis);
 
-			// parse return type specification
-			Match(TokenKind.Colon);
-			Token returnType = Match(TokenKind.Identifier);
-			if (returnType.Text != "Integer")
-				throw new ParserError(returnType.Position, "Unknown type encountered: " + returnType.Text);
+            // parse return type specification
+            Match(TokenKind.Colon);
+            AST.Type returnType = ParseType();
 
-			Match(TokenKind.Tilde);
-			Expression body = ParseExpression();
+            Match(TokenKind.Tilde);
+            Expression body = ParseExpression();
 
-			return new FunctionDeclaration(start.Position, identifier, parameters.ToArray(), body);
-		}
+            AST.Type funcType = new FunctionType(start.Position, returnType, parameters.ToArray(), body);
+            return new FunctionDeclaration(start.Position, identifier, funcType);
+        }
 
         private Command ParseIfCommand()
         {
@@ -293,13 +291,26 @@ namespace Beryl
             return new LetCommand(start.Position, declarations, command);
         }
 
+        private AST.Type ParseType()
+        {
+            Token type = Match(TokenKind.Identifier);
+            switch (type.Text)
+            {
+                case "Integer":
+                    return new IntegerType(type.Position);
+
+                default:
+                    throw new ParserError(type.Position, "Unknown type '" + type.Text + "' encountered");
+            }
+        }
+
         private Declaration ParseVarDeclaration()
         {
             Token start = Match(TokenKind.Keyword_Var);
             Token name = Match(TokenKind.Identifier);
             Match(TokenKind.Colon);
-            Token type = Match(TokenKind.Identifier);
-            return new VarDeclaration(start.Position, name.Text, type.Text);
+            AST.Type type = ParseType();
+            return new VarDeclaration(start.Position, name.Text, type);
         }
 
         private Command ParseWhileCommand()
@@ -316,7 +327,7 @@ namespace Beryl
          */
         public AST.Program ParseProgram()
         {
-			Token start = _lookahead;
+            Token start = _lookahead;
             Commands commands = ParseCommands();
             return new AST.Program(start.Position, commands);
         }

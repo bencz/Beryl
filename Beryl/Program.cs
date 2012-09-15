@@ -1,8 +1,8 @@
 ﻿/* Syntax:
  * Program = Single-Command .
  * Command = Single-Command | Command ";" Single-Command .
- * Single-Command = 
- *      V-name ":=" Expression | 
+ * Single-Command =
+ *      V-name ":=" Expression |
  *      Identifier "(" Expression ")" |
  *      "if" Expression "then" Single-Command "else" Single-Command |
  *      "while" Expression "do" Single-Command |
@@ -34,51 +34,58 @@ namespace Beryl
     {
         static int Main(string[] args)
         {
-			int result = 0;
+            int result = 0;
 
-			try
-			{
+            try
+            {
 #if false
-				StreamReader sr = new StreamReader(args[0]);
-				Scanner scanner = new Scanner(args[0], sr, 4);
-				for (; ; )
-				{
-					Token token = scanner.ReadToken();
-					Console.WriteLine(token.Position.ToString() + ":" + token.ToString());
+                StreamReader sr = new StreamReader(args[0]);
+                Scanner scanner = new Scanner(args[0], sr, 4);
+                for (; ; )
+                {
+                    Token token = scanner.ReadToken();
+                    Console.WriteLine(token.Position.ToString() + ":" + token.ToString());
 
-					if (token.Kind == TokenKind.EndOfFile)
-						break;
-				}
-				sr.Close();
-				Console.ReadLine();
+                    if (token.Kind == TokenKind.EndOfFile)
+                        break;
+                }
+                sr.Close();
+                Console.ReadLine();
 #else
-				SymbolTable symbols = new SymbolTable();
-				StreamReader reader = new StreamReader(args[0]);
-				Scanner scanner = new Scanner(args[0], reader, 4);
-				Parser parser = new Parser(symbols, scanner);
-				AST.Program program = parser.ParseProgram();
-				new CodeGen(symbols, program);
-				Console.WriteLine("Press ENTER");
-				Console.ReadLine();
-#endif
-			}
-			catch (CoderError that)
-			{
-				Console.WriteLine("{0} Error: {1}", that.Position.ToString(), that.Message);
-				result = 1;
-			}
-			catch (ParserError that)
-			{
-				Console.WriteLine("{0} Error: {1}", that.Position.ToString(), that.Message);
-				result = 1;
-			}
-			catch (ScannerError that)
-			{
-				Console.WriteLine("{0} Error: {1}", that.Position.ToString(), that.Message);
-				result = 1;
-			}
+                // todo: expand wildcards
 
-			return result;
+                // process each input file in turn
+                foreach (string arg in args)
+                {
+                    SymbolTable symbols = new SymbolTable();
+                    StreamReader reader = new StreamReader(arg);
+                    Scanner scanner = new Scanner(arg, reader, 4);
+                    Parser parser = new Parser(symbols, scanner);
+                    AST.Program program = parser.ParseProgram();
+                    Checker checker = new Checker(symbols, program);
+                    new CodeGen(symbols, program);
+                    Console.WriteLine("Press ENTER");
+                    Console.ReadLine();
+                }
+#endif
+            }
+            catch (BerylError that)
+            {
+                if (that.Position == null)
+                    Console.WriteLine("Error: {0}", that.Message);
+                else
+                    Console.WriteLine("{0} Error: {1}", that.Position.ToString(), that.Message);
+                result = 1;
+            }
+#if false
+            catch (System.Exception that)
+            {
+                Console.WriteLine("Error: {0}", that.Message);
+                result = 1;
+            }
+#endif
+
+            return result;
         }
     }
 }

@@ -48,7 +48,11 @@ namespace Beryl
 
         public override string ToString()
         {
+            if (_line == 0 || _char == 0)
+                return "(" + _file + ")";
+
             return "(" + _file + " " + _line.ToString() + ":" + _char.ToString() + ")";
         }
     }
 }
+

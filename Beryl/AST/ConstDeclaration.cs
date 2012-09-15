@@ -13,16 +13,26 @@ namespace Beryl.AST
             get { return _identifier; }
         }
 
+        private AST.Type _type;
+        public AST.Type Type
+        {
+            get { return _type; }
+        }
+
         private Expression _expression;
         public Expression Expression
         {
             get { return _expression; }
         }
 
-        public ConstDeclaration(Position position, string identifier, Expression expression):
-			base(position)
+        public ConstDeclaration(Position position, string identifier, AST.Type type, Expression expression):
+            base(position)
         {
             _identifier = identifier;
+
+            _type = type;
+            _type.Parent = this;
+
             _expression = expression;
             _expression.Parent = this;
         }
@@ -33,3 +43,4 @@ namespace Beryl.AST
         }
     }
 }
+

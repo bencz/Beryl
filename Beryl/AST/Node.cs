@@ -11,18 +11,24 @@ namespace Beryl.AST
         public Node Parent
         {
             get { return _parent; }
-            set { _parent = value; }
+            set
+            {
+                if (_parent != null)
+                    throw new BerylError("Cannot redefine parent of node");
+
+                _parent = value;
+            }
         }
 
-		private Position _position;
-		public Position Position
-		{
-			get { return _position; }
-		}
+        private Position _position;
+        public Position Position
+        {
+            get { return _position; }
+        }
 
         public Node(Position position)
         {
-			_position = position;
+            _position = position;
         }
 
         public abstract void visit(Visitor that);

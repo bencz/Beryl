@@ -13,27 +13,17 @@ namespace Beryl.AST
             get { return _name; }
         }
 
-        private Parameter[] _parameters;
-        public Parameter[] Parameters
+        private AST.Type _type;
+        public AST.Type Type
         {
-            get { return _parameters; }
+            get { return _type; }
         }
 
-        private Expression _body;
-        public Expression Body
-        {
-            get { return _body; }
-        }
-
-        public FunctionDeclaration(Position position, string name, Parameter[] parameters, Expression body):
-			base(position)
+        public FunctionDeclaration(Position position, string name, Type type) :
+            base(position)
         {
             _name = name;
-            _parameters = parameters;
-            foreach (Parameter parameter in _parameters)
-                parameter.Parent = this;
-            _body = body;
-            _body.Parent = this;
+            _type = type;
         }
 
         public override void visit(Visitor that)
@@ -42,3 +32,4 @@ namespace Beryl.AST
         }
     }
 }
+

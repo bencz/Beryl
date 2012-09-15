@@ -6,18 +6,11 @@ using System.Threading.Tasks;
 
 namespace Beryl
 {
-    public class ScannerError: System.Exception
+    public class ScannerError: BerylError
     {
-        private Position _position;
-        public Position Position
-        {
-            get { return _position; }
-        }
-
         public ScannerError(Position position, string message) :
-            base(message)
+            base(position, message)
         {
-            _position = new Position(position);    // make DEEP copy to avoid nasty side effects
         }
     }
 }

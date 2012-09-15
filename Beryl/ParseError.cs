@@ -5,18 +5,11 @@ using System.Text;
 
 namespace Beryl
 {
-    public class ParserError : System.Exception
+    public class ParserError : BerylError
     {
-        private Position _position;
-        public Position Position
-        {
-            get { return _position; }
-        }
-
         public ParserError(Position position, string message) :
-            base(message)
+            base(position, message)
         {
-            _position = new Position(position);    // make DEEP copy to avoid nasty side effects
         }
     }
 }
