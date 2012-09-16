@@ -163,8 +163,8 @@ namespace Beryl
             Token name = Match(TokenKind.Identifier);
             Match(TokenKind.Tilde);
             Expression expression = ParseExpression();
-            // todo: deduce the type from the constant expression
-            return new ConstDeclaration(start.Position, name.Text, new IntegerType(expression.Position), expression);
+            //AST.Type type = expression.Type;
+            return new ConstDeclaration(start.Position, name.Text, new IntegerType(start.Position), expression);
         }
 
         private Declaration[] ParseDeclaration()
@@ -209,16 +209,16 @@ namespace Beryl
             {
                 case TokenKind.Literal_Integer:
                     token = Match(TokenKind.Literal_Integer);
-                    return new IntegerLiteral(token.Position, int.Parse(token.Text));
+                    return new IntegerExpression(token.Position, int.Parse(token.Text));
 
                 case TokenKind.Literal_String:
                     token = Match(TokenKind.Literal_String);
-                    return new StringLiteral(token.Position, token.Text);
+                    return new StringExpression(token.Position, token.Text);
 
                 case TokenKind.Identifier:
                     token = Match(TokenKind.Identifier);
                     if (_lookahead.Kind != TokenKind.LeftParenthesis)
-                        return new Variable(token.Position, token.Text);
+                        return new VariableExpression(token.Position, token.Text);
                     // parse function invokation
                     Match(TokenKind.LeftParenthesis);
                     List<Expression> arguments = new List<Expression>();
@@ -327,6 +327,9 @@ namespace Beryl
             Token type = Match(TokenKind.Identifier);
             switch (type.Text)
             {
+                case "Boolean":
+                    return new BooleanType(type.Position);
+
                 case "Integer":
                     return new IntegerType(type.Position);
 

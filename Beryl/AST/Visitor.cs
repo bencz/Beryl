@@ -10,6 +10,8 @@ namespace Beryl.AST
         void visit(AssignCommand that);
         void visit(BeginCommand that);
         void visit(BinaryExpression that);
+        void visit(BooleanExpression that);
+        void visit(BooleanType that);
         void visit(CallCommand that);
         void visit(Commands that);
         void visit(ConstDeclaration that);
@@ -18,17 +20,17 @@ namespace Beryl.AST
         void visit(FunctionExpression that);
         void visit(FunctionType that);
         void visit(IfCommand that);
-        void visit(IntegerLiteral that);
+        void visit(IntegerExpression that);
         void visit(IntegerType that);
         void visit(LetCommand that);
         void visit(Parameter that);
         void visit(Parenthesis that);
         void visit(Program that);
-        void visit(StringLiteral that);
+        void visit(StringExpression that);
         void visit(StringType that);
         void visit(UnaryExpression that);
         void visit(VarDeclaration that);
-        void visit(Variable that);
+        void visit(VariableExpression that);
         void visit(WhileCommand that);
     }
 }

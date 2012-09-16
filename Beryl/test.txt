@@ -5,7 +5,8 @@ let
     func foo() : Integer ~
         bar;
     func f(a : Integer) : Integer ~
-        a * foo()
+        a * foo();
+    const monkey ~ false
 in
     begin
         let

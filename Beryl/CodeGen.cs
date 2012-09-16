@@ -39,6 +39,14 @@ namespace Beryl
         {
         }
 
+        public void visit(BooleanExpression that)
+        {
+        }
+
+        public void visit(BooleanType that)
+        {
+        }
+
         public void visit(CallCommand that)
         {
             Console.WriteLine("CallCommand:");
@@ -50,7 +58,7 @@ namespace Beryl
                     // getint( xx )
                     if (that.Arguments.Length != 1)
                         throw new CoderError(that.Position, "Incorrect number of parameters in function call");
-                    Variable argument = that.Arguments[0] as Variable;
+                    VariableExpression argument = that.Arguments[0] as VariableExpression;
                     if (argument == null)
                         throw new CoderError("Variable expected");
                     Console.WriteLine("Arg = {0}", argument.Name);
@@ -112,7 +120,7 @@ namespace Beryl
             that.Else.visit(this);
         }
 
-        public void visit(IntegerLiteral that)
+        public void visit(IntegerExpression that)
         {
         }
 
@@ -144,7 +152,7 @@ namespace Beryl
             that.Commands.visit(this);
         }
 
-        public void visit(StringLiteral that)
+        public void visit(StringExpression that)
         {
         }
 
@@ -160,7 +168,7 @@ namespace Beryl
         {
         }
 
-        public void visit(Variable that)
+        public void visit(VariableExpression that)
         {
         }
 

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Beryl.AST
 {
-    public class IntegerLiteral: Expression
+    public class IntegerExpression: Expression
     {
         private int _value;
         public int Value
@@ -13,8 +13,8 @@ namespace Beryl.AST
             get { return _value; }
         }
 
-        public IntegerLiteral(Position position, int value):
-			base(position)
+        public IntegerExpression(Position position, int value):
+            base(position)
         {
             _value = value;
         }
@@ -30,3 +30,4 @@ namespace Beryl.AST
         }
     }
 }
+

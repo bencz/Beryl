@@ -13,19 +13,10 @@ namespace Beryl.AST
             get { return _identifier; }
         }
 
-        private AST.Type _type;
-        public AST.Type Type
-        {
-            get { return _type; }
-        }
-
         public VarDeclaration(Position position, string identifier, AST.Type type):
-            base(position)
+            base(position, SymbolKind.Variable, type)
         {
             _identifier = identifier;
-
-            _type = type;
-            _type.Parent = this;
         }
 
         public override void visit(Visitor that)

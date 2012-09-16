@@ -5,15 +5,15 @@ using System.Text;
 
 namespace Beryl.AST
 {
-    public class StringLiteral: Expression
+    public class BooleanExpression: Expression
     {
-        private string _value;
-        public string Value
+        private bool _value;
+        public bool Value
         {
             get { return _value; }
         }
 
-        public StringLiteral(Position position, string value):
+        public BooleanExpression(Position position, bool value):
             base(position)
         {
             _value = value;
@@ -21,7 +21,7 @@ namespace Beryl.AST
 
         public override int Evaluate(SymbolTable symbols)
         {
-            throw new CheckerError(this.Position, "Cannot use string in constant initializer expression");
+            throw new CheckerError(this.Position, "Cannot initialize booleans just yet...");
         }
 
         public override void visit(Visitor that)
@@ -30,3 +30,4 @@ namespace Beryl.AST
         }
     }
 }
+
