@@ -60,6 +60,26 @@ namespace Beryl
             }
         }
 
+
+        private Expression[] ParseArguments()
+        {
+            Match(TokenKind.LeftParenthesis);
+            List<Expression> arguments = new List<Expression>();
+            while (_lookahead.Kind != TokenKind.RightParenthesis)
+            {
+                Expression argument = ParseExpression();
+                arguments.Add(argument);
+
+                if (_lookahead.Kind != TokenKind.Comma)
+                    break;
+
+                Match(TokenKind.Comma);
+            }
+            Match(TokenKind.RightParenthesis);
+
+            return arguments.ToArray();
+        }
+
         /*
          * Parses a single command.
          */
@@ -95,19 +115,16 @@ namespace Beryl
         {
             Token name = Match(TokenKind.Identifier);
 
-            Expression expression;
             switch (_lookahead.Kind)
             {
                 case TokenKind.Assignment:      // an assignment statement
                     Match(TokenKind.Assignment);
-                    expression = ParseExpression();
+                    Expression expression = ParseExpression();
                     return new AssignCommand(name.Position, name.Text, expression);
 
                 case TokenKind.LeftParenthesis: // a procedure call
-                    Match(TokenKind.LeftParenthesis);
-                    expression = ParseExpression();
-                    Match(TokenKind.RightParenthesis);
-                    return new CallCommand(name.Position, name.Text, expression);
+                    Expression[] arguments = ParseArguments();
+                    return new CallCommand(name.Position, name.Text, arguments);
 
                 default:
                     throw new ParserError(_lookahead.Position, "Unexpected token: " + _lookahead.ToString());
@@ -201,7 +218,7 @@ namespace Beryl
                     // parse function invokation
                     Match(TokenKind.LeftParenthesis);
                     List<Expression> arguments = new List<Expression>();
-                    for (;;)
+                    while (_lookahead.Kind != TokenKind.RightParenthesis)
                     {
                         arguments.Add(ParseExpression());
 
@@ -246,7 +263,7 @@ namespace Beryl
             // parse parameter list
             Match(TokenKind.LeftParenthesis);
             List<Parameter> parameters = new List<Parameter>();
-            for (;;)
+            while (_lookahead.Kind != TokenKind.RightParenthesis)
             {
                 Token name = Match(TokenKind.Identifier);
                 Match(TokenKind.Colon);

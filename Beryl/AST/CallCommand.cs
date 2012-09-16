@@ -13,18 +13,20 @@ namespace Beryl.AST
             get { return _identifier; }
         }
 
-        private Expression _expression;
-        public Expression Expression
+        private Expression[] _arguments;
+        public Expression[] Arguments
         {
-            get { return _expression; }
+            get { return _arguments; }
         }
 
-        public CallCommand(Position position, string identifier, Expression expression):
-			base(position)
+        public CallCommand(Position position, string identifier, Expression[] arguments):
+            base(position)
         {
             _identifier = identifier;
-            _expression = expression;
-            _expression.Parent = this;
+
+            _arguments = arguments;
+            foreach (Expression argument in _arguments)
+                argument.Parent = this;
         }
 
         public override void visit(Visitor that)
@@ -33,3 +35,4 @@ namespace Beryl.AST
         }
     }
 }
+

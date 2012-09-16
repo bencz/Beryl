@@ -42,14 +42,15 @@ namespace Beryl
         public void visit(CallCommand that)
         {
             Console.WriteLine("CallCommand:");
-            that.Expression.visit(this); // yes, but they are the responsibility of the code genereator>
 
             switch (that.Identifier)
             {
                 case "getint":
                     // To get the parameters ??
                     // getint( xx )
-                    Variable argument = that.Expression as Variable;
+                    if (that.Arguments.Length != 1)
+                        throw new CoderError(that.Position, "Incorrect number of parameters in function call");
+                    Variable argument = that.Arguments[0] as Variable;
                     if (argument == null)
                         throw new CoderError("Variable expected");
                     Console.WriteLine("Arg = {0}", argument.Name);
@@ -58,6 +59,9 @@ namespace Beryl
                 case "putint":
                     break;
             }
+
+            foreach (Expression argument in that.Arguments)
+                argument.visit(this);
         }
 
         /* This is the second tree-walking method that is called! */

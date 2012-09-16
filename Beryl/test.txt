@@ -1,11 +1,14 @@
 let
     const m ~ 7;
+    const bar ~ 42;
     var n : Integer;
+    func foo() : Integer ~
+        bar;
     func f(a : Integer) : Integer ~
         a * m
 in
     begin
-        n := f(2) * m * m;
+        n := f(2) * m * m + foo();
         putint(n)
     end
 

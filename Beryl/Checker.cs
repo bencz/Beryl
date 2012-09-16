@@ -95,7 +95,13 @@ namespace Beryl
                     throw new CheckerError(symbol.Position, "Unknown symbol kind: " + symbol.Kind.ToString());
             }
 
-            that.Expression.visit(this);
+            // check that the expected number of parameters is specified
+            FunctionType type = (FunctionType) symbol.Type;
+            if (that.Arguments.Length != type.Parameters.Length)
+                throw new CheckerError(that.Position, "Incorrect number of parameters in function call");
+
+            foreach (Expression argument in that.Arguments)
+                argument.visit(this);
         }
 
         public void visit(Commands that)
@@ -126,6 +132,27 @@ namespace Beryl
 
         public void visit(FunctionExpression that)
         {
+            Symbol symbol = _symbols.Lookup(that.Position, that.Name);
+
+            switch (symbol.Kind)
+            {
+                case SymbolKind.Constant:
+                    throw new CheckerError(that.Position, "Cannot invoke constant");
+
+                case SymbolKind.Function:
+                    break;
+
+                case SymbolKind.Variable:
+                    throw new CheckerError(that.Position, "Cannot invoke variable");
+
+                default:
+                    throw new CheckerError(symbol.Position, "Unknown symbol kind: " + symbol.Kind.ToString());
+            }
+
+            FunctionType type = (FunctionType) symbol.Type;
+            if (that.Arguments.Length != type.Parameters.Length)
+                throw new CheckerError(that.Position, "Incorrect number of parameters in function call");
+
             foreach (Expression argument in that.Arguments)
                 argument.visit(this);
         }
@@ -198,3 +225,4 @@ namespace Beryl
         }
     }
 }
+
