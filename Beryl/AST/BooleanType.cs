@@ -8,7 +8,7 @@ namespace Beryl.AST
     public class BooleanType: Type
     {
         public BooleanType(Position position):
-            base(position)
+            base(position, TypeKind.Boolean)
         {
         }
 

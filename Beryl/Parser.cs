@@ -288,8 +288,7 @@ namespace Beryl
             Match(TokenKind.Tilde);
             Expression body = ParseExpression();
 
-            AST.Type funcType = new FunctionType(start.Position, returnType, parameters.ToArray(), body);
-            return new FunctionDeclaration(start.Position, identifier, funcType);
+            return new FunctionDeclaration(start.Position, identifier, returnType, parameters.ToArray(), body);
         }
 
         private Command ParseIfCommand()

@@ -8,7 +8,7 @@ namespace Beryl.AST
     public class StringType: Type
     {
         public StringType(Position position):
-            base(position)
+            base(position, TypeKind.String)
         {
         }
 

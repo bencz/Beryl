@@ -7,9 +7,16 @@ namespace Beryl.AST
 {
     public abstract class Type: Node
     {
-		public Type(Position position):
-			base(position)
-		{
-		}
+        private TypeKind _kind;
+        public TypeKind Kind
+        {
+            get { return _kind; }
+        }
+
+        public Type(Position position, TypeKind kind) :
+            base(position)
+        {
+            _kind = kind;
+        }
     }
 }

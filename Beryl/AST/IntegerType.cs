@@ -7,10 +7,10 @@ namespace Beryl.AST
 {
     public class IntegerType: Type
     {
-		public IntegerType(Position position):
-			base(position)
-		{
-		}
+        public IntegerType(Position position):
+            base(position, TypeKind.Integer)
+        {
+        }
 
         public override void visit(Visitor that)
         {

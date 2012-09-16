@@ -20,23 +20,23 @@ namespace Beryl
             Position position = new Position("(library)", 0, 0);
 
             // enter the predefined functions (getint and putint) into the symbol table
-            AST.Type type = new FunctionType(
+            Declaration declaration = new FunctionDeclaration(
                 position,
+                "getint",
                 new IntegerType(position),
                 new Parameter[] { new Parameter(position, "value", new IntegerType(position))},
                 null        // note: the code generator must handle these predefined functions so no body is defined
             );
-            Declaration declaration = new FunctionDeclaration(position, "getint", type);
             Symbol symbol = new Symbol(position, "getint", declaration);
             _symbols.Insert(position, "getint", symbol);
 
-            type = new FunctionType(
+            declaration = new FunctionDeclaration(
                 position,
+                "putint",
                 new IntegerType(position),
                 new Parameter[] { new Parameter(position, "value", new IntegerType(position))},
                 null        // note: the code generator must handle these predefined functions so no body is defined
             );
-            declaration = new FunctionDeclaration(position, "putint", type);
             symbol = new Symbol(position, "putint", declaration);
             _symbols.Insert(position, "putint", symbol);
 
@@ -122,9 +122,10 @@ namespace Beryl
             }
 
             // check that the expected number of parameters is specified
-            FunctionType type = (FunctionType) symbol.Declaration.Type;
-            if (that.Arguments.Length != type.Parameters.Length)
+            FunctionDeclaration declaration = (FunctionDeclaration) symbol.Declaration;
+            if (that.Arguments.Length != declaration.Parameters.Length)
                 throw new CheckerError(that.Position, "Incorrect number of parameters in function call");
+            // todo: check that the argument types match the parameter types
 
             foreach (Expression argument in that.Arguments)
                 argument.visit(this);
@@ -152,7 +153,12 @@ namespace Beryl
         {
             Symbol symbol = new Symbol(that.Position, that.Name, that);
             _symbols.Insert(that.Position, that.Name, symbol);
+
             that.Type.visit(this);
+            foreach (Parameter parameter in that.Parameters)
+                parameter.visit(this);
+            that.Body.visit(this);
+
         }
 
         public void visit(FunctionExpression that)
@@ -176,20 +182,13 @@ namespace Beryl
                     throw new CheckerError(symbol.Position, "Unknown symbol kind: " + symbol.Declaration.Kind.ToString());
             }
 
-            FunctionType type = (FunctionType) symbol.Declaration.Type;
-            if (that.Arguments.Length != type.Parameters.Length)
+            FunctionDeclaration declaration = (FunctionDeclaration) symbol.Declaration;
+            if (that.Arguments.Length != declaration.Parameters.Length)
                 throw new CheckerError(that.Position, "Incorrect number of parameters in function call");
+            // todo: check that the argument types match the parameter types
 
             foreach (Expression argument in that.Arguments)
                 argument.visit(this);
-        }
-
-        public void visit(FunctionType that)
-        {
-            that.Type.visit(this);
-            foreach (Parameter parameter in that.Parameters)
-                parameter.visit(this);
-            that.Body.visit(this);
         }
 
         public void visit(IfCommand that)
