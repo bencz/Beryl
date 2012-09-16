@@ -7,25 +7,42 @@ namespace Beryl
 {
     public class SymbolTable
     {
-        private Dictionary<string, Symbol> _symbols = new Dictionary<string, Symbol>();
+        Stack<Scope> _scopes = new Stack<Scope>();
 
         public SymbolTable()
         {
+            EnterScope();
+        }
+
+        public void EnterScope()
+        {
+            _scopes.Push(new Scope());
+        }
+
+        public void LeaveScope()
+        {
+            if (_scopes.Count > 1)
+                _scopes.Pop();
         }
 
         public void Insert(Position position, string name, Symbol symbol)
         {
-            if (_symbols.ContainsKey(name))
-                throw new ParserError(position, "Symbol already defined '" + name + "'");
-            _symbols[name] = symbol;
+            Scope top = _scopes.Peek();
+            if (top.Lookup(name) != null)
+                throw new ParserError(position, "Symbol '" + name + "' already defined");
+            top.Insert(name, symbol);
         }
 
-        public Symbol Lookup(Position position, string name)
+        public Symbol Lookup(string name)
         {
-            Symbol result;
-            if (!_symbols.TryGetValue(name, out result))
-                throw new ParserError(position, "Symbol not defined '" + name + "'");
-            return result;
+            foreach (Scope scope in _scopes)
+            {
+                Symbol symbol = scope.Lookup(name);
+                if (symbol != null)
+                    return symbol;
+            }
+
+            return null;
         }
     }
 }

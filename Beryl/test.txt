@@ -5,10 +5,15 @@ let
     func foo() : Integer ~
         bar;
     func f(a : Integer) : Integer ~
-        a * m
+        a * foo()
 in
     begin
-        n := f(2) * m * m + foo();
-        putint(n)
+        let
+            const foo ~ 32
+        in
+            begin
+                n := f(2) * m * m + foo;
+                putint(n)
+            end
     end
 

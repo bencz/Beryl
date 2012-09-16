@@ -14,15 +14,17 @@ namespace Beryl.AST
         }
 
         public Variable(Position position, string name):
-			base(position)
+            base(position)
         {
             _name = name;
         }
 
         public override int Evaluate(SymbolTable symbols)
         {
-            Symbol symbol = symbols.Lookup(new Position(), _name);
-			return symbol.Value;
+            Symbol symbol = symbols.Lookup(_name);
+            if (symbol == null)
+                throw new CheckerError(this.Position, "Unknown constant '" + _name + "' referenced in constant initializer");
+            return symbol.Value;
         }
 
         public override void visit(Visitor that)
@@ -31,3 +33,4 @@ namespace Beryl.AST
         }
     }
 }
+

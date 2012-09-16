@@ -42,7 +42,9 @@ namespace Beryl
         public void visit(AssignCommand that)
         {
             // check that the symbol exists - by trying to look it up
-            Symbol symbol = _symbols.Lookup(that.Position, that.Name);
+            Symbol symbol = _symbols.Lookup(that.Name);
+            if (symbol == null)
+                throw new CheckerError(that.Position, "Variable '" + that.Name + "' not found in assignment statement");
 
             // check that the symbol is indeed a variable
             switch (symbol.Kind)
@@ -79,7 +81,10 @@ namespace Beryl
 
         public void visit(CallCommand that)
         {
-            Symbol symbol = _symbols.Lookup(that.Position, that.Identifier);
+            Symbol symbol = _symbols.Lookup(that.Identifier);
+            if (symbol == null)
+                throw new CheckerError(that.Position, "Unknown function name '" + that.Identifier + "' in call command");
+
             switch (symbol.Kind)
             {
                 case SymbolKind.Constant:
@@ -132,7 +137,9 @@ namespace Beryl
 
         public void visit(FunctionExpression that)
         {
-            Symbol symbol = _symbols.Lookup(that.Position, that.Name);
+            Symbol symbol = _symbols.Lookup(that.Name);
+            if (symbol == null)
+                throw new CheckerError(that.Position, "Unknown function name '" + that.Name + "' in function call");
 
             switch (symbol.Kind)
             {
@@ -183,9 +190,11 @@ namespace Beryl
 
         public void visit(LetCommand that)
         {
+            _symbols.EnterScope();
             foreach (Declaration declaration in that.Declarations)
                 declaration.visit(this);
             that.Command.visit(this);
+            _symbols.LeaveScope();
         }
 
         public void visit(Parameter that)
