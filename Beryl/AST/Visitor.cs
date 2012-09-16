@@ -24,6 +24,8 @@ namespace Beryl.AST
         void visit(Parameter that);
         void visit(Parenthesis that);
         void visit(Program that);
+        void visit(StringLiteral that);
+        void visit(StringType that);
         void visit(UnaryExpression that);
         void visit(VarDeclaration that);
         void visit(Variable that);

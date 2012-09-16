@@ -38,7 +38,7 @@ namespace Beryl
             _keywords["const"] = TokenKind.Keyword_Const;
             _keywords["do"] = TokenKind.Keyword_Do;
             _keywords["else"] = TokenKind.Keyword_Else;
-			_keywords["func"] = TokenKind.Keyword_Func;
+            _keywords["func"] = TokenKind.Keyword_Func;
             _keywords["end"] = TokenKind.Keyword_End;
             _keywords["if"] = TokenKind.Keyword_If;
             _keywords["in"] = TokenKind.Keyword_In;
@@ -76,12 +76,12 @@ namespace Beryl
         }
 
         /* in the parser:
-         * 
+         *
          * if (PeekToken() == TokenKind.Keyword_if)
          *     ParseifStatement();
-         *     
+         *
          * and:
-         * 
+         *
          * switch (PeekToken())
          * {
          *     ...
@@ -132,9 +132,9 @@ namespace Beryl
                     result.Kind = TokenKind.Colon;
                     break;
 
-				case ',':
-					result.Kind = TokenKind.Comma;
-					break;
+                case ',':
+                    result.Kind = TokenKind.Comma;
+                    break;
 
                 case '~':
                     result.Kind = TokenKind.Tilde;
@@ -182,6 +182,22 @@ namespace Beryl
 
                 case EOF:
                     result.Kind = TokenKind.EndOfFile;
+                    break;
+
+                case '"':
+                    while (_nextChar != '"')
+                    {
+                        if (_nextChar == '\n')
+                            throw new ScannerError(_cursor, "End of line in string literal");
+                        else if (_nextChar == EOF)
+                            throw new ScannerError(_cursor, "End of file in string literal");
+
+                        _text.Append(ReadChar());
+                    }
+                    ReadChar();         // skip closing quote
+
+                    result.Kind = TokenKind.Literal_String;
+                    result.Text = _text.ToString();
                     break;
 
                 case '0':

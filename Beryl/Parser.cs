@@ -81,34 +81,6 @@ namespace Beryl
         }
 
         /*
-         * Parses a single command.
-         */
-        private Command ParseCommand()
-        {
-            switch (_lookahead.Kind)
-            {
-                case TokenKind.Identifier:
-                    return ParseAssignOrCallCommand();
-
-                case TokenKind.Keyword_Begin:
-                    return ParseBeginCommand();
-
-                case TokenKind.Keyword_If:
-                    return ParseIfCommand();
-
-                case TokenKind.Keyword_Let:
-                    return ParseLetCommand();
-
-                case TokenKind.Keyword_While:
-                    return ParseWhileCommand();
-
-                default:
-                    throw new ParserError(_lookahead.Position, "Unexpected token: " + _lookahead.ToString());
-            }
-
-        }
-
-        /*
          * Parses an assignment or a procedure call command.
          */
         private Command ParseAssignOrCallCommand()
@@ -137,6 +109,34 @@ namespace Beryl
             Commands commands = ParseCommands();
             Match(TokenKind.Keyword_End);
             return new BeginCommand(start.Position, commands);
+        }
+
+        /*
+         * Parses a single command.
+         */
+        private Command ParseCommand()
+        {
+            switch (_lookahead.Kind)
+            {
+                case TokenKind.Identifier:
+                    return ParseAssignOrCallCommand();
+
+                case TokenKind.Keyword_Begin:
+                    return ParseBeginCommand();
+
+                case TokenKind.Keyword_If:
+                    return ParseIfCommand();
+
+                case TokenKind.Keyword_Let:
+                    return ParseLetCommand();
+
+                case TokenKind.Keyword_While:
+                    return ParseWhileCommand();
+
+                default:
+                    throw new ParserError(_lookahead.Position, "Unexpected token: " + _lookahead.ToString());
+            }
+
         }
 
         private Commands ParseCommands()
@@ -211,6 +211,10 @@ namespace Beryl
                     token = Match(TokenKind.Literal_Integer);
                     return new IntegerLiteral(token.Position, int.Parse(token.Text));
 
+                case TokenKind.Literal_String:
+                    token = Match(TokenKind.Literal_String);
+                    return new StringLiteral(token.Position, token.Text);
+
                 case TokenKind.Identifier:
                     token = Match(TokenKind.Identifier);
                     if (_lookahead.Kind != TokenKind.LeftParenthesis)
@@ -236,7 +240,7 @@ namespace Beryl
                     return new UnaryExpression(token.Position, @operator, ParseExpression());
 
                 default:
-                    throw new ParserError(_lookahead.Position, "Expected integer literal, identifier or unary operator");
+                    throw new ParserError(_lookahead.Position, "Expected integer literal, string literal, identifier, or unary operator");
             }
         }
 
@@ -308,6 +312,16 @@ namespace Beryl
             return new LetCommand(start.Position, declarations, command);
         }
 
+        /*
+         * Parses a sequence of commands.
+         */
+        public AST.Program ParseProgram()
+        {
+            Token start = _lookahead;
+            Commands commands = ParseCommands();
+            return new AST.Program(start.Position, commands);
+        }
+
         private AST.Type ParseType()
         {
             Token type = Match(TokenKind.Identifier);
@@ -315,6 +329,9 @@ namespace Beryl
             {
                 case "Integer":
                     return new IntegerType(type.Position);
+
+                case "String":
+                    return new StringType(type.Position);
 
                 default:
                     throw new ParserError(type.Position, "Unknown type '" + type.Text + "' encountered");
@@ -337,16 +354,6 @@ namespace Beryl
             Match(TokenKind.Keyword_Do);
             Command command = ParseCommand();
             return new WhileCommand(start.Position, expression, command);
-        }
-
-        /*
-         * Parses a sequence of commands.
-         */
-        public AST.Program ParseProgram()
-        {
-            Token start = _lookahead;
-            Commands commands = ParseCommands();
-            return new AST.Program(start.Position, commands);
         }
 
         private Operator TokenKindToOperator(Position position, TokenKind kind)

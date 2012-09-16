@@ -202,6 +202,14 @@ namespace Beryl
             that.Commands.visit(this);
         }
 
+        public void visit(StringLiteral that)
+        {
+        }
+
+        public void visit(StringType that)
+        {
+        }
+
         public void visit(UnaryExpression that)
         {
             that.Expression.visit(this);
@@ -215,7 +223,6 @@ namespace Beryl
 
         public void visit(Variable that)
         {
-
         }
 
         public void visit(WhileCommand that)

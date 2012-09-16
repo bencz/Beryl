@@ -13,9 +13,9 @@ namespace Beryl
         Asterisk,                       // *
         Backslash,                      // \
         Colon,                          // :
-		Comma,							// ,
+        Comma,                          // ,
         EndOfFile,
-        Equal,                          // = 
+        Equal,                          // =
         GreaterThan,                    // >
         Identifier,
         Keyword_Begin,
@@ -32,7 +32,8 @@ namespace Beryl
         Keyword_While,
         LeftParenthesis,                // (
         LessThan,                       // <
-        Literal_Integer,
+        Literal_Integer,                // ddd
+        Literal_String,                 // "text"
         Minus,                          // -
         Plus,                           // +
         RightParenthesis,               // )
