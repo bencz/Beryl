@@ -23,5 +23,7 @@ namespace Beryl.AST
         {
             stream.WriteLine("Kind = {0}", _kind.ToString());
         }
+
+        public abstract void Encode(System.Text.StringBuilder result);
     }
 }

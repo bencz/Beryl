@@ -39,8 +39,10 @@ namespace Beryl
             return result;
         }
 
-        private void CreateStandardEnvironment()
+        private Declaration[] CreateStandardEnvironment(bool insert = false)
         {
+            List<Declaration> result = new List<Declaration>();
+
             // signal that the following symbols are part of the standard library
             Position position = new Position("(library)", 0, 0);
             Declaration declaration;
@@ -49,16 +51,16 @@ namespace Beryl
             // enter the predefined constant 'maxint' into the symbol table
             expression = new IntegerExpression(position, int.MaxValue);
             declaration = new ConstantDeclaration(position, "maxint", new IntegerType(position), expression);
-            _symbols.Insert(position, "maxint", declaration);
+            result.Add(declaration);
 
             // enter the predefined constants 'false' and 'true' into the symbol table
             expression = new BooleanExpression(position, false);
             declaration = new ConstantDeclaration(position, "false", new BooleanType(position), expression);
-            _symbols.Insert(position, "false", declaration);
+            result.Add(declaration);
 
             expression = new BooleanExpression(position, true);
             declaration = new ConstantDeclaration(position, "true", new BooleanType(position), expression);
-            _symbols.Insert(position, "true", declaration);
+            result.Add(declaration);
 
             // enter the predefined operators into the symbol table
             // ... the \ operator
@@ -69,10 +71,10 @@ namespace Beryl
                 new ParameterDeclaration[] { new ParameterDeclaration(position, "value", new BooleanType(position)) },
                 null        // note: the code generator must handle these predefined functions so no body is defined
             );
-            _symbols.Insert(position, "\\", declaration);
+            result.Add(declaration);
 
             // ... all Triangle operators of the form Boolean x Boolean -> Boolean
-            string[] boolean_and_boolean_to_boolean_operators = { "/\\", "\\/" };    // "=", "\\="
+            string[] boolean_and_boolean_to_boolean_operators = { "/\\", "\\/", "=", "\\=" };
             foreach (string @operator in boolean_and_boolean_to_boolean_operators)
             {
                 declaration = new FunctionDeclaration(
@@ -86,7 +88,7 @@ namespace Beryl
                     },
                     null    // note: the code generator must handle these predefined functions so no body is defined
                 );
-                _symbols.Insert(position, @operator, declaration);
+                result.Add(declaration);
             }
 
             // ... all Triangle operators of the form Integer x Integer -> Integer
@@ -104,7 +106,7 @@ namespace Beryl
                     },
                     null    // note: the code generator must handle these predefined functions so no body is defined
                 );
-                _symbols.Insert(position, @operator, declaration);
+                result.Add(declaration);
             }
 
             // ... all Triangle operators of the form Integer x Integer -> Boolean
@@ -122,7 +124,7 @@ namespace Beryl
                     },
                     null    // note: the code generator must handle these predefined functions so no body is defined
                 );
-                _symbols.Insert(position, @operator, declaration);
+                result.Add(declaration);
             }
 
             // enter the predefined functions (getint and putint) into the symbol table
@@ -130,10 +132,14 @@ namespace Beryl
                 position,
                 "getint",
                 new IntegerType(position),
+#if false
                 new ParameterDeclaration[] { new ParameterDeclaration(position, "value", new IntegerType(position))},
+#else
+                new ParameterDeclaration[0],
+#endif
                 null        // note: the code generator must handle these predefined functions so no body is defined
             );
-            _symbols.Insert(position, "getint", declaration);
+            result.Add(declaration);
 
             declaration = new FunctionDeclaration(
                 position,
@@ -142,8 +148,9 @@ namespace Beryl
                 new ParameterDeclaration[] { new ParameterDeclaration(position, "value", new IntegerType(position))},
                 null        // note: the code generator must handle these predefined functions so no body is defined
             );
-            _symbols.Insert(position, "putint", declaration);
+            result.Add(declaration);
 
+            return result.ToArray();
         }
 
         public void visit(AssignCommand that)
@@ -202,10 +209,15 @@ namespace Beryl
             foreach (Expression argument in that.Arguments)
                 argument.visit(this);
 
+            // mangle the parameter list so as to be able to look up the mangled symbol
+            System.Text.StringBuilder mangled = new System.Text.StringBuilder(64);
+            that.Encode(mangled);
+            string name = mangled.ToString();
+
             // look up the function name
-            Declaration declaration = _symbols.Lookup(that.Identifier);
+            Declaration declaration = _symbols.Lookup(name);
             if (declaration == null)
-                throw new CheckerError(that.Position, "Unknown function name '" + that.Identifier + "' in call command");
+                throw new CheckerError(that.Position, "Unknown function name '" + Demangler.Decode(name) + "' in call command");
 
             switch (declaration.Kind)
             {
@@ -270,7 +282,8 @@ namespace Beryl
 
             // nothing to check as we've just computed the type of the constant (cannot mismatch)
 
-            _symbols.Insert(that.Position, that.Name, that);
+            if (!_symbols.Insert(that.Name, that))
+                throw new CheckerError(that.Position, "Duplicate name '" + that.Name + "' detected in constant declaration");
         }
 
         public void visit(Declarations that)
@@ -281,22 +294,29 @@ namespace Beryl
 
         public void visit(FunctionDeclaration that)
         {
-            _symbols.Insert(that.Position, that.Name, that);
-            _symbols.EnterScope(that.Name);
+            System.Text.StringBuilder mangled = new System.Text.StringBuilder(64);
+            that.Encode(mangled);
+            string name = mangled.ToString();
+
+            if (!_symbols.Insert(name, that))
+                throw new CheckerError(that.Position, "Duplicate name '" + Demangler.Decode(name) + "' detected in function declaration");
+            _symbols.EnterScope(name);
 
             that.Type.visit(this);
 
             foreach (ParameterDeclaration parameter in that.Parameters)
             {
                 // insert each parameter into the current scope so that it becomes visible to the code
-                _symbols.Insert(parameter.Position, parameter.Name, parameter);
+                if (!_symbols.Insert(parameter.Name, parameter))
+                    throw new CheckerError(parameter.Position, "Duplicate name '" + parameter.Name + "' detected in parameter");
 
                 parameter.visit(this);
             }
 
-            that.Body.visit(this);
+            if (that.Body != null)
+                that.Body.visit(this);
 
-            _symbols.LeaveScope(that.Name);
+            _symbols.LeaveScope(name);
         }
 
         public void visit(FunctionExpression that)
@@ -305,10 +325,15 @@ namespace Beryl
             foreach (Expression argument in that.Arguments)
                 argument.visit(this);
 
+            // mangle the parameter list so as to be able to look up the mangled symbol
+            System.Text.StringBuilder mangled = new System.Text.StringBuilder(64);
+            that.Encode(mangled);
+            string name = mangled.ToString();
+
             // look up the function declaration
-            Declaration declaration = _symbols.Lookup(that.Name);
+            Declaration declaration = _symbols.Lookup(name);
             if (declaration == null)
-                throw new CheckerError(that.Position, "Unknown function name '" + that.Name + "' in function call");
+                throw new CheckerError(that.Position, "Unknown function name '" + Demangler.Decode(name) + "' in function call");
 
             // check that the symbol is actually a function
             switch (declaration.Kind)
@@ -385,7 +410,8 @@ namespace Beryl
 
         public void visit(AST.Program that)
         {
-            that.Commands.visit(this);
+            that.Command.Declarations = CreateStandardEnvironment();
+            that.Command.visit(this);
         }
 
         public void visit(StringExpression that)
@@ -399,7 +425,8 @@ namespace Beryl
 
         public void visit(VariableDeclaration that)
         {
-            _symbols.Insert(that.Position, that.Name, that);
+            if (!_symbols.Insert(that.Name, that))
+                throw new CheckerError(that.Position, "Duplicate name '" + that.Name + "' detected in variable declaration");
         }
 
         /* VariableExpression perhaps ought to be called IdentifierExpression as it is used for both constants and variables. */

@@ -311,7 +311,7 @@ namespace Beryl
         {
             Token start = _lookahead;
             Commands commands = ParseCommands();
-            return new AST.Program(start.Position, commands);
+            return new AST.Program(start.Position, new LetCommand(start.Position, null, commands));
         }
 
         private AST.Type ParseType()

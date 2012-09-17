@@ -8,6 +8,8 @@ let
         a * foo();
     func gt(a : Integer, b : Integer) : Boolean ~
         a > b;
+    func gt(a : Boolean, b : Boolean) : Boolean ~
+        a;
     const monkey ~ false;
     var b : Boolean
 in

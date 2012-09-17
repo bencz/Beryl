@@ -35,6 +35,30 @@ namespace Beryl.AST
                 stream.WriteLine("Argument = {0,4:D4}", argument.Id);
         }
 
+        public void Encode(System.Text.StringBuilder result)
+        {
+            // output function or operator name
+            result.Append('$');
+            result.Append(Mangler.EncodeNamePart(this.Name));
+
+            // output parameter types
+            result.Append('$');
+            foreach (Expression argument in _arguments)
+            {
+                switch (argument.Type.Kind)
+                {
+                    case TypeKind.Boolean: result.Append('b'); break;
+                    case TypeKind.Integer: result.Append('i'); break;
+                    case TypeKind.String : result.Append('s'); break;
+                    default:
+                        throw new BerylError("Unknown type kind '" + argument.Type.Kind.ToString() + "' encountered");
+                }
+            }
+
+            // output terminating dollar sign ($)
+            result.Append('$');
+        }
+
         public override int Evaluate(SymbolTable symbols)
         {
             throw new CheckerError(this.Position, "Functions cannot be part of a constant expression: " + _name);

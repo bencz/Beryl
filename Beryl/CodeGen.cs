@@ -112,7 +112,10 @@ namespace Beryl
             Console.WriteLine(")");
             Console.WriteLine("{");
             Console.Write("return ");
-            that.Body.visit(this);
+            if (that.Body != null)
+                that.Body.visit(this);
+            else
+                Console.Write("null");
             Console.WriteLine(";");
             Console.WriteLine("}");
         }
@@ -176,7 +179,7 @@ namespace Beryl
         public void visit(AST.Program that)
         {
             Console.WriteLine("namespace Foobar");
-            that.Commands.visit(this);
+            that.Command.visit(this);
         }
 
         public void visit(StringExpression that)

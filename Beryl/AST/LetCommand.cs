@@ -11,6 +11,15 @@ namespace Beryl.AST
         public Declaration[] Declarations
         {
             get { return _declarations; }
+            /** \note The set accessor is \b only used by Checker.visit(Program) to insert the standard environment. */
+            set
+            {
+                if (_declarations != null)
+                    throw new BerylError("Cannot redefine children of LetCommand node");
+                _declarations = value;
+                foreach (Declaration declaration in _declarations)
+                    declaration.Parent = this;
+            }
         }
 
         private Command _command;
@@ -23,8 +32,12 @@ namespace Beryl.AST
             base(position)
         {
             _declarations = declarations;
-            foreach (Declaration declaration in _declarations)
-                declaration.Parent = this;
+            if (_declarations != null)
+            {
+                foreach (Declaration declaration in _declarations)
+                    declaration.Parent = this;
+            }
+
             _command = command;
             _command.Parent = this;
         }

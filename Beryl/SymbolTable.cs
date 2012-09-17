@@ -30,12 +30,14 @@ namespace Beryl
                 throw new BerylError("Scope stack mismatch: " + name);
         }
 
-        public void Insert(Position position, string name, Declaration declaration)
+        public bool Insert(string name, Declaration declaration)
         {
             Scope top = _scopes.Peek();
             if (top.Lookup(name) != null)
-                throw new ParserError(position, "Symbol '" + name + "' already defined");
+                return false;
+
             top.Insert(name, declaration);
+            return true;
         }
 
         public Declaration Lookup(string name)

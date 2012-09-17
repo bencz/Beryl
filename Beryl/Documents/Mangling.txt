@@ -1,0 +1,14 @@
+The Beryl compiler internally "mangles" (encodes) identifiers so as to seamlessly support the operator overloading that Triangle
+requires.  The name mangling scheme is really simple:
+
+Encoded_Name : "$" (Operator | Name) "$" *ParameterType "$"
+Operator     : "$" ("add" | "sub" | "mul" | "div" | "mod" | "eq" | "ne" | "lt" | "le" | "gt" | "ge" | "and" | "ior" | "not")
+Name         : Letter +(Digit | Letter)
+ParameterType: Type
+Type         : ?Direction ("b" | "c" | "i" | "s")           # Boolean (b), Character (c), Integer (i), and String (s)
+Direction    : "I" | "O"                                    # In/Out (I), Out (O)  (NOT CURRENTLY USED!)
+
+NOTE:
+The return type is not encoded as it breaks everything; in a function call, you don't know the return type until after the function
+has been looked up and matched against the list of arguments.
+

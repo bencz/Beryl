@@ -17,6 +17,11 @@ namespace Beryl.AST
             base.DumpFields(stream);
         }
 
+        public override void Encode(System.Text.StringBuilder result)
+        {
+            result.Append('i');
+        }
+
         public override void visit(Visitor that)
         {
             that.visit(this);

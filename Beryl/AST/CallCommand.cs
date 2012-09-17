@@ -36,6 +36,30 @@ namespace Beryl.AST
                 stream.WriteLine("Argument = {0,4:D4}", argument.Id);
         }
 
+        public void Encode(System.Text.StringBuilder result)
+        {
+            // output function or operator name
+            result.Append('$');
+            result.Append(Mangler.EncodeNamePart(this.Identifier));
+
+            // output parameter types
+            result.Append('$');
+            foreach (Expression argument in _arguments)
+            {
+                switch (argument.Type.Kind)
+                {
+                    case TypeKind.Boolean: result.Append('b'); break;
+                    case TypeKind.Integer: result.Append('i'); break;
+                    case TypeKind.String : result.Append('s'); break;
+                    default:
+                        throw new BerylError("Unknown type kind '" + argument.Type.Kind.ToString() + "' encountered");
+                }
+            }
+
+            // output terminating dollar sign ($)
+            result.Append('$');
+        }
+
         public override void visit(Visitor that)
         {
             that.visit(this);

@@ -35,9 +35,33 @@ namespace Beryl.AST
         public override void DumpFields(Indenter stream)
         {
             base.DumpFields(stream);
+
+            System.Text.StringBuilder mangled = new System.Text.StringBuilder(64);
+            this.Encode(mangled);
+            stream.WriteLine("Mangled = {0}", mangled.ToString());
+            stream.WriteLine("Demangled = {0}", Demangler.Decode(mangled.ToString()));
+
             foreach (ParameterDeclaration parameter in _parameters)
                 stream.WriteLine("Parameter = {0,4:D4}", parameter.Id);
             stream.WriteLine("Body = {0,4:D4}", (_body == null) ? "null" : _body.Id.ToString("D4"));
+        }
+
+        public override void Encode(System.Text.StringBuilder result)
+        {
+            if (this.Name[0] == '$')
+                throw new BerylError("Symbol already mangled: " + this.Name);
+
+            // output function or operator name
+            result.Append('$');
+            result.Append(Mangler.EncodeNamePart(this.Name));
+
+            // output parameter types
+            result.Append('$');
+            foreach (ParameterDeclaration parameter in _parameters)
+                parameter.Encode(result);
+
+            // output terminating dollar sign ($)
+            result.Append('$');
         }
 
         public override void visit(Visitor that)

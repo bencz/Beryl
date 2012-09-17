@@ -45,5 +45,10 @@ namespace Beryl.AST
             stream.WriteLine("Type = {0,4:D4}", _type.Id);
         }
 
+        public virtual void Encode(System.Text.StringBuilder result)
+        {
+            result.Append('$');
+            _type.Encode(result);
+        }
     }
 }
