@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Beryl.AST;
 
 namespace Beryl
 {
@@ -11,35 +12,39 @@ namespace Beryl
 
         public SymbolTable()
         {
-            EnterScope();
+            EnterScope("(global)");
         }
 
-        public void EnterScope()
+        public void EnterScope(string name)
         {
-            _scopes.Push(new Scope());
+            _scopes.Push(new Scope(name));
         }
 
-        public void LeaveScope()
+        public void LeaveScope(string name)
         {
-            if (_scopes.Count > 1)
-                _scopes.Pop();
+            if (_scopes.Count == 0)
+                throw new BerylError("Scope stack underflow");
+
+            Scope top = _scopes.Pop();
+            if (top.Name != name)
+                throw new BerylError("Scope stack mismatch: " + name);
         }
 
-        public void Insert(Position position, string name, Symbol symbol)
+        public void Insert(Position position, string name, Declaration declaration)
         {
             Scope top = _scopes.Peek();
             if (top.Lookup(name) != null)
                 throw new ParserError(position, "Symbol '" + name + "' already defined");
-            top.Insert(name, symbol);
+            top.Insert(name, declaration);
         }
 
-        public Symbol Lookup(string name)
+        public Declaration Lookup(string name)
         {
             foreach (Scope scope in _scopes)
             {
-                Symbol symbol = scope.Lookup(name);
-                if (symbol != null)
-                    return symbol;
+                Declaration declaration = scope.Lookup(name);
+                if (declaration != null)
+                    return declaration;
             }
 
             return null;

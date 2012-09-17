@@ -6,7 +6,10 @@ let
         bar;
     func f(a : Integer) : Integer ~
         a * foo();
-    const monkey ~ false
+    func gt(a : Integer, b : Integer) : Boolean ~
+        a > b;
+    const monkey ~ false;
+    var b : Boolean
 in
     begin
         let
@@ -14,6 +17,8 @@ in
         in
             begin
                 n := f(2) * m * m + foo;
+                b := true;
+                b := n > 3;
                 putint(n)
             end
     end

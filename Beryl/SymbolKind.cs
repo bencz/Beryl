@@ -6,6 +6,7 @@ namespace Beryl
         None,
         Constant,
         Function,
+        Parameter,
         Variable
     }
 }

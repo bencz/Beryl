@@ -2,21 +2,33 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Beryl.AST;
 
 namespace Beryl
 {
     public class Scope
     {
-        private Dictionary<string, Symbol> _symbols = new Dictionary<string, Symbol>();
+        private Dictionary<string, Declaration> _symbols = new Dictionary<string, Declaration>();
 
-        public void Insert(string name, Symbol symbol)
+        private string _name;
+        public string Name
         {
-            _symbols[name] = symbol;
+            get { return _name; }
         }
 
-        public Symbol Lookup(string name)
+        public Scope(string name)
         {
-            Symbol result;
+            _name = name;
+        }
+
+        public void Insert(string name, Declaration declaration)
+        {
+            _symbols[name] = declaration;
+        }
+
+        public Declaration Lookup(string name)
+        {
+            Declaration result;
             _symbols.TryGetValue(name, out result);
             return result;
         }

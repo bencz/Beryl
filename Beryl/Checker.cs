@@ -10,6 +10,7 @@ namespace Beryl
     {
         private SymbolTable _symbols;
         private AST.Program _program;
+        private uint        _counter;
 
         public Checker(SymbolTable symbols, AST.Program program)
         {
@@ -27,8 +28,7 @@ namespace Beryl
                 new Parameter[] { new Parameter(position, "value", new IntegerType(position))},
                 null        // note: the code generator must handle these predefined functions so no body is defined
             );
-            Symbol symbol = new Symbol(position, "getint", declaration);
-            _symbols.Insert(position, "getint", symbol);
+            _symbols.Insert(position, "getint", declaration);
 
             declaration = new FunctionDeclaration(
                 position,
@@ -37,45 +37,56 @@ namespace Beryl
                 new Parameter[] { new Parameter(position, "value", new IntegerType(position))},
                 null        // note: the code generator must handle these predefined functions so no body is defined
             );
-            symbol = new Symbol(position, "putint", declaration);
-            _symbols.Insert(position, "putint", symbol);
+            _symbols.Insert(position, "putint", declaration);
 
             // enter the predefined constants 'false' and 'true' into the symbol table
             Expression expression = new BooleanExpression(position, false);
             declaration = new ConstDeclaration(position, "false", new BooleanType(position), expression);
-            symbol = new Symbol(position, "false", declaration);
-            _symbols.Insert(position, "false", symbol);
+            _symbols.Insert(position, "false", declaration);
 
             expression = new BooleanExpression(position, true);
             declaration = new ConstDeclaration(position, "true", new BooleanType(position), expression);
+            _symbols.Insert(position, "true", declaration);
 
             _program.visit(this);
         }
 
+        private string CreateName()
+        {
+            string result = _counter.ToString("D4");
+            _counter += 1;
+            return result;
+        }
+
         public void visit(AssignCommand that)
         {
+            // determine the type of the right-hand-side (RHS) by visiting it
+            that.Expression.visit(this);
+
             // check that the symbol exists - by trying to look it up
-            Symbol symbol = _symbols.Lookup(that.Name);
-            if (symbol == null)
+            Declaration declaration = _symbols.Lookup(that.Name);
+            if (declaration == null)
                 throw new CheckerError(that.Position, "Variable '" + that.Name + "' not found in assignment statement");
 
             // check that the symbol is indeed a variable
-            switch (symbol.Declaration.Kind)
+            switch (declaration.Kind)
             {
                 case SymbolKind.Constant:
-                    throw new CheckerError(symbol.Position, "Cannot assign to a constant");
+                    throw new CheckerError(declaration.Position, "Cannot assign to a constant");
 
                 case SymbolKind.Function:
-                    throw new CheckerError(symbol.Position, "Cannot assign to a function");
+                    throw new CheckerError(declaration.Position, "Cannot assign to a function");
 
                 case SymbolKind.Variable:
                     break;
 
                 default:
-                    throw new CheckerError(symbol.Position, "Unknown symbol kind: " + symbol.Declaration.Kind.ToString());
+                    throw new CheckerError(declaration.Position, "Unknown symbol kind: " + declaration.Kind.ToString());
             }
 
-            // nothing more to check as we support only integers
+            TypeKind firstType = declaration.Type.Kind;
+            TypeKind otherType = TypeKind.None;
+            System.Console.WriteLine("{0} and {1}", firstType.ToString(), otherType.ToString());
             // todo: evaluate the type of the rhs and check that the variable has the same type
 
             that.Expression.visit(this);
@@ -102,11 +113,11 @@ namespace Beryl
 
         public void visit(CallCommand that)
         {
-            Symbol symbol = _symbols.Lookup(that.Identifier);
-            if (symbol == null)
+            Declaration declaration = _symbols.Lookup(that.Identifier);
+            if (declaration == null)
                 throw new CheckerError(that.Position, "Unknown function name '" + that.Identifier + "' in call command");
 
-            switch (symbol.Declaration.Kind)
+            switch (declaration.Kind)
             {
                 case SymbolKind.Constant:
                     throw new CheckerError(that.Position, "Cannot invoke constant");
@@ -118,12 +129,12 @@ namespace Beryl
                     throw new CheckerError(that.Position, "Cannot invoke variable");
 
                 default:
-                    throw new CheckerError(symbol.Position, "Unknown symbol kind: " + symbol.Declaration.Kind.ToString());
+                    throw new CheckerError(declaration.Position, "Unknown symbol kind: " + declaration.Kind.ToString());
             }
 
             // check that the expected number of parameters is specified
-            FunctionDeclaration declaration = (FunctionDeclaration) symbol.Declaration;
-            if (that.Arguments.Length != declaration.Parameters.Length)
+            FunctionDeclaration function = (FunctionDeclaration) declaration;
+            if (that.Arguments.Length != function.Parameters.Length)
                 throw new CheckerError(that.Position, "Incorrect number of parameters in function call");
             // todo: check that the argument types match the parameter types
 
@@ -139,8 +150,7 @@ namespace Beryl
 
         public void visit(ConstDeclaration that)
         {
-            Symbol symbol = new Symbol(that.Position, that.Identifier, that);
-            _symbols.Insert(that.Position, that.Identifier, symbol);
+            _symbols.Insert(that.Position, that.Identifier, that);
         }
 
         public void visit(Declarations that)
@@ -151,23 +161,31 @@ namespace Beryl
 
         public void visit(FunctionDeclaration that)
         {
-            Symbol symbol = new Symbol(that.Position, that.Name, that);
-            _symbols.Insert(that.Position, that.Name, symbol);
+            _symbols.Insert(that.Position, that.Name, that);
+            _symbols.EnterScope(that.Name);
 
             that.Type.visit(this);
+
             foreach (Parameter parameter in that.Parameters)
+            {
+                // insert each parameter into the current scope so that it becomes visible to the code
+                _symbols.Insert(parameter.Position, parameter.Name, parameter);
+
                 parameter.visit(this);
+            }
+
             that.Body.visit(this);
 
+            _symbols.LeaveScope(that.Name);
         }
 
         public void visit(FunctionExpression that)
         {
-            Symbol symbol = _symbols.Lookup(that.Name);
-            if (symbol == null)
+            Declaration declaration = _symbols.Lookup(that.Name);
+            if (declaration == null)
                 throw new CheckerError(that.Position, "Unknown function name '" + that.Name + "' in function call");
 
-            switch (symbol.Declaration.Kind)
+            switch (declaration.Kind)
             {
                 case SymbolKind.Constant:
                     throw new CheckerError(that.Position, "Cannot invoke constant");
@@ -179,11 +197,11 @@ namespace Beryl
                     throw new CheckerError(that.Position, "Cannot invoke variable");
 
                 default:
-                    throw new CheckerError(symbol.Position, "Unknown symbol kind: " + symbol.Declaration.Kind.ToString());
+                    throw new CheckerError(declaration.Position, "Unknown symbol kind: " + declaration.Kind.ToString());
             }
 
-            FunctionDeclaration declaration = (FunctionDeclaration) symbol.Declaration;
-            if (that.Arguments.Length != declaration.Parameters.Length)
+            FunctionDeclaration function = (FunctionDeclaration) declaration;
+            if (that.Arguments.Length != function.Parameters.Length)
                 throw new CheckerError(that.Position, "Incorrect number of parameters in function call");
             // todo: check that the argument types match the parameter types
 
@@ -209,11 +227,13 @@ namespace Beryl
 
         public void visit(LetCommand that)
         {
-            _symbols.EnterScope();
+            string name = CreateName();
+
+            _symbols.EnterScope(name);
             foreach (Declaration declaration in that.Declarations)
                 declaration.visit(this);
             that.Command.visit(this);
-            _symbols.LeaveScope();
+            _symbols.LeaveScope(name);
         }
 
         public void visit(Parameter that)
@@ -245,12 +265,15 @@ namespace Beryl
 
         public void visit(VarDeclaration that)
         {
-            Symbol symbol = new Symbol(that.Position, that.Identifier, that);
-            _symbols.Insert(that.Position, that.Identifier, symbol);
+            _symbols.Insert(that.Position, that.Identifier, that);
         }
 
         public void visit(VariableExpression that)
         {
+            Declaration declaration = _symbols.Lookup(that.Name);
+            if (declaration == null)
+                throw new CheckerError(that.Position, "Undefined variable '" + that.Name + "' in expression");
+            that.Type = declaration.Type;
         }
 
         public void visit(WhileCommand that)

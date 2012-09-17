@@ -26,11 +26,13 @@ namespace Beryl.AST
         }
 
         public BinaryExpression(Position position, Expression first, Operator @operator, Expression other):
-			base(position)
+            base(position)
         {
             _first = first;
             _first.Parent = this;
+
             _operator = @operator;
+
             _other = other;
             _other.Parent = this;
         }
