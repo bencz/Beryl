@@ -19,6 +19,11 @@ namespace Beryl.AST
             _name = name;
         }
 
+        public override void DumpFields(Indenter stream)
+        {
+            stream.WriteLine("Name = {0}", _name);
+        }
+
         public override int Evaluate(SymbolTable symbols)
         {
             throw new BerylError(this.Position, "Constant expressions not yet implemented");

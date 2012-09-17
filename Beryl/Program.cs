@@ -64,6 +64,15 @@ namespace Beryl
                     Parser parser = new Parser(symbols, scanner);
                     AST.Program program = parser.ParseProgram();
                     Checker checker = new Checker(symbols, program);
+                    Indenter indenter = new Indenter(arg + ".log", System.Text.Encoding.ASCII);
+                    try
+                    {
+                        program.Dump(indenter);
+                    }
+                    finally
+                    {
+                        indenter.Close();
+                    }
                     new CodeGen(symbols, program);
                     Console.WriteLine("Press ENTER");
                     Console.ReadLine();

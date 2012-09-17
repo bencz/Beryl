@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -37,5 +37,13 @@ namespace Beryl.AST
             _type = type;
             _type.Parent = this;
         }
+
+        public override void DumpFields(Indenter stream)
+        {
+            stream.WriteLine("Name = {0}", _name);
+            stream.WriteLine("Kind = {0}", _kind.ToString());
+            stream.WriteLine("Type = {0,4:D4}", _type.Id);
+        }
+
     }
 }

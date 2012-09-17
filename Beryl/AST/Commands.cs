@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,11 +14,17 @@ namespace Beryl.AST
         }
 
         public Commands(Position position, Command[] commands):
-			base(position)
+            base(position)
         {
             _commands = commands;
             foreach (Command command in _commands)
                 command.Parent = this;
+        }
+
+        public override void DumpFields(Indenter stream)
+        {
+            foreach (Command command in _commands)
+                stream.WriteLine("Command = {0,4:D4}", command.Id);
         }
 
         public override void visit(Visitor that)

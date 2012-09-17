@@ -20,6 +20,12 @@ namespace Beryl.AST
             _expression.Parent = this;
         }
 
+        public override void DumpFields(Indenter stream)
+        {
+            base.DumpFields(stream);
+            stream.WriteLine("Expression = {0,4:D4}", _expression.Id);
+        }
+
         public override void visit(Visitor that)
         {
             that.visit(this);

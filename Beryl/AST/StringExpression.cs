@@ -19,6 +19,11 @@ namespace Beryl.AST
             _value = value;
         }
 
+        public override void DumpFields(Indenter stream)
+        {
+            stream.WriteLine("Value = \"{0}\"", _value);
+        }
+
         public override int Evaluate(SymbolTable symbols)
         {
             throw new CheckerError(this.Position, "Cannot use string in constant initializer expression");

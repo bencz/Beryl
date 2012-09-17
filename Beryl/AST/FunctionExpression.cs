@@ -20,7 +20,7 @@ namespace Beryl.AST
         }
 
         public FunctionExpression(Position position, string name, Expression[] arguments):
-			base(position)
+            base(position)
         {
             _name = name;
             _arguments = arguments;
@@ -28,10 +28,17 @@ namespace Beryl.AST
                 argument.Parent = this;
         }
 
-		public override int Evaluate(SymbolTable symbols)
-		{
-			throw new CheckerError(this.Position, "Functions cannot be part of a constant expression: " + _name);
-		}
+        public override void DumpFields(Indenter stream)
+        {
+            stream.WriteLine("Name = {0}", _name);
+            foreach (Expression argument in _arguments)
+                stream.WriteLine("Argument = {0,4:D4}", argument.Id);
+        }
+
+        public override int Evaluate(SymbolTable symbols)
+        {
+            throw new CheckerError(this.Position, "Functions cannot be part of a constant expression: " + _name);
+        }
 
         public override void visit(Visitor that)
         {

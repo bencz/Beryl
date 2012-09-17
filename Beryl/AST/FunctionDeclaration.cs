@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,6 +30,14 @@ namespace Beryl.AST
             _body = body;
             if (_body != null)
                 _body.Parent = this;
+        }
+
+        public override void DumpFields(Indenter stream)
+        {
+            base.DumpFields(stream);
+            foreach (ParameterDeclaration parameter in _parameters)
+                stream.WriteLine("Parameter = {0,4:D4}", parameter.Id);
+            stream.WriteLine("Body = {0,4:D4}", (_body == null) ? "null" : _body.Id.ToString("D4"));
         }
 
         public override void visit(Visitor that)

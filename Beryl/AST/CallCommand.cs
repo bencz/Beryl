@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,6 +27,13 @@ namespace Beryl.AST
             _arguments = arguments;
             foreach (Expression argument in _arguments)
                 argument.Parent = this;
+        }
+
+        public override void DumpFields(Indenter stream)
+        {
+            stream.WriteLine("Name = {0}", _identifier);
+            foreach (Expression argument in _arguments)
+                stream.WriteLine("Argument = {0,4:D4}", argument.Id);
         }
 
         public override void visit(Visitor that)

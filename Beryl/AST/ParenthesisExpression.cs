@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,6 +18,11 @@ namespace Beryl.AST
         {
             _expression = expression;
             _expression.Parent = this;
+        }
+
+        public override void DumpFields(Indenter stream)
+        {
+            stream.WriteLine("Expression = {0,4:D4}", _expression.Id);
         }
 
         public override int Evaluate(SymbolTable symbols)

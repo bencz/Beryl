@@ -18,5 +18,10 @@ namespace Beryl.AST
         {
             _kind = kind;
         }
+
+        public override void DumpFields(Indenter stream)
+        {
+            stream.WriteLine("Kind = {0}", _kind.ToString());
+        }
     }
 }

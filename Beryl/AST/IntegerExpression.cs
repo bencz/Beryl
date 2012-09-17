@@ -24,6 +24,11 @@ namespace Beryl.AST
             return _value;
         }
 
+        public override void DumpFields(Indenter stream)
+        {
+            stream.WriteLine("Value = {0}", _value);
+        }
+
         public override void visit(Visitor that)
         {
             that.visit(this);

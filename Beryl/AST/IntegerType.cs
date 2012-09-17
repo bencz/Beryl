@@ -12,6 +12,11 @@ namespace Beryl.AST
         {
         }
 
+        public override void DumpFields(Indenter stream)
+        {
+            base.DumpFields(stream);
+        }
+
         public override void visit(Visitor that)
         {
             that.visit(this);
