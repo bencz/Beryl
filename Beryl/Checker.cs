@@ -144,28 +144,29 @@ namespace Beryl
             // check that the symbol exists - by trying to look it up
             Declaration declaration = _symbols.Lookup(that.Name);
             if (declaration == null)
-                throw new CheckerError(that.Position, "Variable '" + that.Name + "' not found in assignment statement");
+                throw new CheckerError(that.Position, "Variable '" + that.Name + "' not declared in assignment statement");
 
             // check that the symbol is indeed a variable
             switch (declaration.Kind)
             {
                 case SymbolKind.Constant:
-                    throw new CheckerError(declaration.Position, "Cannot assign to a constant");
+                    throw new CheckerError(that.Position, "Cannot assign to a constant");
 
                 case SymbolKind.Function:
-                    throw new CheckerError(declaration.Position, "Cannot assign to a function");
+                    throw new CheckerError(that.Position, "Cannot assign to a function");
 
                 case SymbolKind.Variable:
                     break;
 
                 default:
-                    throw new CheckerError(declaration.Position, "Unknown symbol kind: " + declaration.Kind.ToString());
+                    throw new CheckerError(that.Position, "Unknown symbol kind: " + declaration.Kind.ToString());
             }
 
+            // check that the types of the left-hand-side is equal to the type of the right-hand-side
             TypeKind firstType = declaration.Type.Kind;
-            TypeKind otherType = TypeKind.None; // that.Expression.Type.Kind;
-            System.Console.WriteLine("{0} and {1}", firstType.ToString(), otherType.ToString());
-            // todo: evaluate the type of the rhs and check that the variable has the same type
+            TypeKind otherType = that.Expression.Type.Kind;
+            if (firstType != otherType)
+                throw new CheckerError(that.Position, "Type mismatch in assignment");
         }
 
         public void visit(BeginCommand that)
@@ -280,6 +281,8 @@ namespace Beryl
             if (that.Arguments.Length != function.Parameters.Length)
                 throw new CheckerError(that.Position, "Incorrect number of parameters in function call");
             // todo: check that the argument types match the parameter types
+
+            that.Type = declaration.Type;
         }
 
         public void visit(IfCommand that)
@@ -291,11 +294,11 @@ namespace Beryl
 
         public void visit(IntegerExpression that)
         {
+            that.Type = new IntegerType(that.Position);
         }
 
         public void visit(IntegerType that)
         {
-            // this method does nothing as long as we have only one type (Integer)
         }
 
         public void visit(LetCommand that)
@@ -316,6 +319,7 @@ namespace Beryl
         public void visit(ParenthesisExpression that)
         {
             that.Expression.visit(this);
+            that.Type = that.Expression.Type;
         }
 
         public void visit(AST.Program that)
@@ -325,6 +329,7 @@ namespace Beryl
 
         public void visit(StringExpression that)
         {
+            that.Type = new StringType(that.Position);
         }
 
         public void visit(StringType that)
@@ -336,6 +341,7 @@ namespace Beryl
             _symbols.Insert(that.Position, that.Name, that);
         }
 
+        /* VariableExpression perhaps ought to be called IdentifierExpression as it is used for both constants and variables. */
         public void visit(VariableExpression that)
         {
             Declaration declaration = _symbols.Lookup(that.Name);
