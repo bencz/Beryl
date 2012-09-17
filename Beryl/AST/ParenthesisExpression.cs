@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Beryl.AST
 {
-    public class Parenthesis: Expression
+    public class ParenthesisExpression: Expression
     {
         private Expression _expression;
         public Expression Expression
@@ -13,8 +13,8 @@ namespace Beryl.AST
             get { return _expression; }
         }
 
-        public Parenthesis(Position position, Expression expression):
-			base(position)
+        public ParenthesisExpression(Position position, Expression expression):
+            base(position)
         {
             _expression = expression;
             _expression.Parent = this;

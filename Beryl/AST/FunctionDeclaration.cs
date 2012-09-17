@@ -7,8 +7,8 @@ namespace Beryl.AST
 {
     public class FunctionDeclaration: Declaration
     {
-        private Parameter[] _parameters;
-        public Parameter[] Parameters
+        private ParameterDeclaration[] _parameters;
+        public ParameterDeclaration[] Parameters
         {
             get { return _parameters; }
         }
@@ -19,11 +19,11 @@ namespace Beryl.AST
             get { return _body; }
         }
 
-        public FunctionDeclaration(Position position, string name, AST.Type type, Parameter[] parameters, Expression body) :
+        public FunctionDeclaration(Position position, string name, AST.Type type, ParameterDeclaration[] parameters, Expression body) :
             base(position, name, SymbolKind.Function, type)
         {
             _parameters = parameters;
-            foreach (Parameter parameter in _parameters)
+            foreach (ParameterDeclaration parameter in _parameters)
                 parameter.Parent = this;
 
             // body MAY be null for predefined functions

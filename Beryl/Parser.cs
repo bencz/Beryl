@@ -1,9 +1,3 @@
-/**
- * Issues:
- *
- *    1. Add parsing of function declaration.
- */
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -265,13 +259,13 @@ namespace Beryl
 
             // parse parameter list
             Match(TokenKind.LeftParenthesis);
-            List<Parameter> parameters = new List<Parameter>();
+            List<ParameterDeclaration> parameters = new List<ParameterDeclaration>();
             while (_lookahead.Kind != TokenKind.RightParenthesis)
             {
                 Token name = Match(TokenKind.Identifier);
                 Match(TokenKind.Colon);
                 AST.Type type = ParseType();
-                parameters.Add(new Parameter(name.Position, name.Text, type));
+                parameters.Add(new ParameterDeclaration(name.Position, name.Text, type));
 
                 if (_lookahead.Kind != TokenKind.Comma)
                     break;

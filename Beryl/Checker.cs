@@ -22,6 +22,13 @@ namespace Beryl
             _program.visit(this);
         }
 
+        private string CreateName()
+        {
+            string result = _counter.ToString("D4");
+            _counter += 1;
+            return result;
+        }
+
         private void CreateStandardEnvironment()
         {
             // signal that the following symbols are part of the standard library
@@ -49,10 +56,28 @@ namespace Beryl
                 position,
                 "\\",
                 new BooleanType(position),
-                new Parameter[] { new Parameter(position, "value", new BooleanType(position)) },
+                new ParameterDeclaration[] { new ParameterDeclaration(position, "value", new BooleanType(position)) },
                 null        // note: the code generator must handle these predefined functions so no body is defined
             );
             _symbols.Insert(position, "\\", declaration);
+
+            // ... all Triangle operators of the form Boolean x Boolean -> Boolean
+            string[] boolean_and_boolean_to_boolean_operators = { "/\\", "\\/" };    // "=", "\\="
+            foreach (string @operator in boolean_and_boolean_to_boolean_operators)
+            {
+                declaration = new FunctionDeclaration(
+                    position,
+                    @operator,
+                    new BooleanType(position),
+                    new ParameterDeclaration[]
+                    {
+                        new ParameterDeclaration(position, "first", new BooleanType(position)),
+                        new ParameterDeclaration(position, "other", new BooleanType(position))
+                    },
+                    null    // note: the code generator must handle these predefined functions so no body is defined
+                );
+                _symbols.Insert(position, @operator, declaration);
+            }
 
             // ... all Triangle operators of the form Integer x Integer -> Integer
             string[] integer_and_integer_to_integer_operators = { "+", "-", "*", "/", "//" };
@@ -62,10 +87,10 @@ namespace Beryl
                     position,
                     @operator,
                     new IntegerType(position),
-                    new Parameter[]
+                    new ParameterDeclaration[]
                     {
-                        new Parameter(position, "first", new IntegerType(position)),
-                        new Parameter(position, "other", new IntegerType(position))
+                        new ParameterDeclaration(position, "first", new IntegerType(position)),
+                        new ParameterDeclaration(position, "other", new IntegerType(position))
                     },
                     null    // note: the code generator must handle these predefined functions so no body is defined
                 );
@@ -80,10 +105,10 @@ namespace Beryl
                     position,
                     @operator,
                     new BooleanType(position),
-                    new Parameter[]
+                    new ParameterDeclaration[]
                     {
-                        new Parameter(position, "first", new IntegerType(position)),
-                        new Parameter(position, "other", new IntegerType(position))
+                        new ParameterDeclaration(position, "first", new IntegerType(position)),
+                        new ParameterDeclaration(position, "other", new IntegerType(position))
                     },
                     null    // note: the code generator must handle these predefined functions so no body is defined
                 );
@@ -95,7 +120,7 @@ namespace Beryl
                 position,
                 "getint",
                 new IntegerType(position),
-                new Parameter[] { new Parameter(position, "value", new IntegerType(position))},
+                new ParameterDeclaration[] { new ParameterDeclaration(position, "value", new IntegerType(position))},
                 null        // note: the code generator must handle these predefined functions so no body is defined
             );
             _symbols.Insert(position, "getint", declaration);
@@ -104,18 +129,11 @@ namespace Beryl
                 position,
                 "putint",
                 new IntegerType(position),
-                new Parameter[] { new Parameter(position, "value", new IntegerType(position))},
+                new ParameterDeclaration[] { new ParameterDeclaration(position, "value", new IntegerType(position))},
                 null        // note: the code generator must handle these predefined functions so no body is defined
             );
             _symbols.Insert(position, "putint", declaration);
 
-        }
-
-        private string CreateName()
-        {
-            string result = _counter.ToString("D4");
-            _counter += 1;
-            return result;
         }
 
         public void visit(AssignCommand that)
@@ -145,7 +163,7 @@ namespace Beryl
             }
 
             TypeKind firstType = declaration.Type.Kind;
-            TypeKind otherType = TypeKind.None;
+            TypeKind otherType = TypeKind.None; // that.Expression.Type.Kind;
             System.Console.WriteLine("{0} and {1}", firstType.ToString(), otherType.ToString());
             // todo: evaluate the type of the rhs and check that the variable has the same type
         }
@@ -157,6 +175,7 @@ namespace Beryl
 
         public void visit(BooleanExpression that)
         {
+            that.Type = new BooleanType(that.Position);
         }
 
         public void visit(BooleanType that)
@@ -165,6 +184,10 @@ namespace Beryl
 
         public void visit(CallCommand that)
         {
+            // let the arguments resolve their types
+            foreach (Expression argument in that.Arguments)
+                argument.visit(this);
+
             Declaration declaration = _symbols.Lookup(that.Identifier);
             if (declaration == null)
                 throw new CheckerError(that.Position, "Unknown function name '" + that.Identifier + "' in call command");
@@ -172,13 +195,13 @@ namespace Beryl
             switch (declaration.Kind)
             {
                 case SymbolKind.Constant:
-                    throw new CheckerError(that.Position, "Cannot invoke constant");
+                    throw new CheckerError(that.Position, "Cannot call constant");
 
                 case SymbolKind.Function:
                     break;
 
                 case SymbolKind.Variable:
-                    throw new CheckerError(that.Position, "Cannot invoke variable");
+                    throw new CheckerError(that.Position, "Cannot call variable");
 
                 default:
                     throw new CheckerError(declaration.Position, "Unknown symbol kind: " + declaration.Kind.ToString());
@@ -189,9 +212,6 @@ namespace Beryl
             if (that.Arguments.Length != function.Parameters.Length)
                 throw new CheckerError(that.Position, "Incorrect number of parameters in function call");
             // todo: check that the argument types match the parameter types
-
-            foreach (Expression argument in that.Arguments)
-                argument.visit(this);
         }
 
         public void visit(Commands that)
@@ -218,7 +238,7 @@ namespace Beryl
 
             that.Type.visit(this);
 
-            foreach (Parameter parameter in that.Parameters)
+            foreach (ParameterDeclaration parameter in that.Parameters)
             {
                 // insert each parameter into the current scope so that it becomes visible to the code
                 _symbols.Insert(parameter.Position, parameter.Name, parameter);
@@ -233,6 +253,10 @@ namespace Beryl
 
         public void visit(FunctionExpression that)
         {
+            // let the arguments resolve their types
+            foreach (Expression argument in that.Arguments)
+                argument.visit(this);
+
             Declaration declaration = _symbols.Lookup(that.Name);
             if (declaration == null)
                 throw new CheckerError(that.Position, "Unknown function name '" + that.Name + "' in function call");
@@ -240,13 +264,13 @@ namespace Beryl
             switch (declaration.Kind)
             {
                 case SymbolKind.Constant:
-                    throw new CheckerError(that.Position, "Cannot invoke constant");
+                    throw new CheckerError(that.Position, "Cannot call constant");
 
                 case SymbolKind.Function:
                     break;
 
                 case SymbolKind.Variable:
-                    throw new CheckerError(that.Position, "Cannot invoke variable");
+                    throw new CheckerError(that.Position, "Cannot call variable");
 
                 default:
                     throw new CheckerError(declaration.Position, "Unknown symbol kind: " + declaration.Kind.ToString());
@@ -256,9 +280,6 @@ namespace Beryl
             if (that.Arguments.Length != function.Parameters.Length)
                 throw new CheckerError(that.Position, "Incorrect number of parameters in function call");
             // todo: check that the argument types match the parameter types
-
-            foreach (Expression argument in that.Arguments)
-                argument.visit(this);
         }
 
         public void visit(IfCommand that)
@@ -288,11 +309,11 @@ namespace Beryl
             _symbols.LeaveScope(name);
         }
 
-        public void visit(Parameter that)
+        public void visit(ParameterDeclaration that)
         {
         }
 
-        public void visit(Parenthesis that)
+        public void visit(ParenthesisExpression that)
         {
             that.Expression.visit(this);
         }

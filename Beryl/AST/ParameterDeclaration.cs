@@ -5,9 +5,9 @@ using System.Text;
 
 namespace Beryl.AST
 {
-    public class Parameter: Declaration
+    public class ParameterDeclaration: Declaration
     {
-        public Parameter(Position position, string name, AST.Type type):
+        public ParameterDeclaration(Position position, string name, AST.Type type):
             base(position, name, SymbolKind.Parameter, type)
         {
         }
@@ -18,3 +18,4 @@ namespace Beryl.AST
         }
     }
 }
+

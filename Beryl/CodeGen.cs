@@ -94,7 +94,7 @@ namespace Beryl
         public void visit(FunctionDeclaration that)
         {
             that.Type.visit(this);
-            foreach (Parameter parameter in that.Parameters)
+            foreach (ParameterDeclaration parameter in that.Parameters)
                 parameter.visit(this);
             that.Body.visit(this);
         }
@@ -130,11 +130,11 @@ namespace Beryl
             that.Command.visit(this);
         }
 
-        public void visit(Parameter that)
+        public void visit(ParameterDeclaration that)
         {
         }
 
-        public void visit(Parenthesis that)
+        public void visit(ParenthesisExpression that)
         {
         }
 
