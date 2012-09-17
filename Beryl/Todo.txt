@@ -1,0 +1,13 @@
+PRIORITY    OWNER       DESCRIPTION
+high        Mikael      Type-check expressions properly.  Also see if constant expressions can't be folded.
+
+high        Alexandre   Begin to generate code for non-predefined functions as the interface to the predefined functions may
+                        change.
+
+low         Mikael      Finish up the string type; currently the scanner and parser can recognize the string type but the checker
+                        does not handle it.
+
+done        Mikael      Finish up registering the predefined Triangle environment; currently it is only partially defined because
+                        Beryl does not yet support operator or function overloading.
+                        :: Beryl now supports operator overloading.
+
