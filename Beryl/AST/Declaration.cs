@@ -7,6 +7,12 @@ namespace Beryl.AST
 {
     public abstract class Declaration: Node
     {
+        private string _name;
+        public string Name
+        {
+            get { return _name; }
+        }
+
         private SymbolKind _kind;
         public SymbolKind Kind
         {
@@ -19,9 +25,11 @@ namespace Beryl.AST
             get { return _type; }
         }
 
-        public Declaration(Position position, SymbolKind kind, AST.Type type):
+        public Declaration(Position position, string name, SymbolKind kind, AST.Type type):
             base(position)
         {
+            _name = name;
+
             _kind = kind;
 
             _type = type;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -33,10 +33,6 @@ namespace Beryl
         {
             Console.WriteLine("BeginCommand:");
             that.Commands.visit(this);
-        }
-
-        public void visit(BinaryExpression that)
-        {
         }
 
         public void visit(BooleanExpression that)
@@ -79,7 +75,7 @@ namespace Beryl
                 command.visit(this);
         }
 
-        public void visit(ConstDeclaration that)
+        public void visit(ConstantDeclaration that)
         {
         }
 
@@ -157,11 +153,7 @@ namespace Beryl
         {
         }
 
-        public void visit(UnaryExpression that)
-        {
-        }
-
-        public void visit(VarDeclaration that)
+        public void visit(VariableDeclaration that)
         {
         }
 

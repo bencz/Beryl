@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace Beryl.AST
 {
-    public class Parameter: Declaration
+    public class VariableDeclaration: Declaration
     {
-        public Parameter(Position position, string name, AST.Type type):
-            base(position, name, SymbolKind.Parameter, type)
+        public VariableDeclaration(Position position, string name, AST.Type type):
+            base(position, name, SymbolKind.Variable, type)
         {
         }
 
@@ -18,3 +18,4 @@ namespace Beryl.AST
         }
     }
 }
+

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Beryl.AST
 {
-    public enum Operator
+    public enum OperatorKind
     {
         Addition,       // +
         Subtraction,    // -
@@ -14,6 +14,6 @@ namespace Beryl.AST
         LessThan,       // <
         GreaterThan,    // >
         Equality,       // =
-        Difference      // \
+        Negation        // \
     }
 }

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Issues:
  *
  *    1. Add parsing of function declaration.
@@ -157,14 +157,13 @@ namespace Beryl
             return new Commands(start.Position, commands.ToArray());
         }
 
-        private Declaration ParseConstDeclaration()
+        private Declaration ParseConstantDeclaration()
         {
             Token start = Match(TokenKind.Keyword_Const);
             Token name = Match(TokenKind.Identifier);
             Match(TokenKind.Tilde);
             Expression expression = ParseExpression();
-            //AST.Type type = expression.Type;
-            return new ConstDeclaration(start.Position, name.Text, new IntegerType(start.Position), expression);
+            return new ConstantDeclaration(start.Position, name.Text, new IntegerType(start.Position), expression);
         }
 
         private Declaration[] ParseDeclaration()
@@ -176,7 +175,7 @@ namespace Beryl
                 switch (_lookahead.Kind)
                 {
                     case TokenKind.Keyword_Const:
-                        declaration = ParseConstDeclaration();
+                        declaration = ParseConstantDeclaration();
                         declarations.Add(declaration);
                         break;
 
@@ -186,7 +185,7 @@ namespace Beryl
                         break;
 
                     case TokenKind.Keyword_Var:
-                        declaration = ParseVarDeclaration();
+                        declaration = ParseVariableDeclaration();
                         declarations.Add(declaration);
                         break;
 
@@ -236,8 +235,8 @@ namespace Beryl
                 case TokenKind.Plus:
                 case TokenKind.Minus:
                     token = ReadToken();
-                    Operator @operator = TokenKindToOperator(token.Position, token.Kind);
-                    return new UnaryExpression(token.Position, @operator, ParseExpression());
+                    string name = TokenKindToOperatorName(token.Position, token.Kind);
+                    return new FunctionExpression(token.Position, name, new Expression[]{ ParseExpression() });
 
                 default:
                     throw new ParserError(_lookahead.Position, "Expected integer literal, string literal, identifier, or unary operator");
@@ -250,10 +249,10 @@ namespace Beryl
             while (IsOperator(_lookahead.Kind))
             {
                 Token token = ReadToken();
-                Operator @operator = TokenKindToOperator(token.Position, token.Kind);
+                string name = TokenKindToOperatorName(token.Position, token.Kind);
                 Expression other = ParseExpressionAtom();
 
-                first = new BinaryExpression(first.Position, first, @operator, other);
+                first = new FunctionExpression(token.Position, name, new Expression[] { first, other });
             }
 
             return first;
@@ -340,13 +339,13 @@ namespace Beryl
             }
         }
 
-        private Declaration ParseVarDeclaration()
+        private Declaration ParseVariableDeclaration()
         {
             Token start = Match(TokenKind.Keyword_Var);
             Token name = Match(TokenKind.Identifier);
             Match(TokenKind.Colon);
             AST.Type type = ParseType();
-            return new VarDeclaration(start.Position, name.Text, type);
+            return new VariableDeclaration(start.Position, name.Text, type);
         }
 
         private Command ParseWhileCommand()
@@ -358,17 +357,34 @@ namespace Beryl
             return new WhileCommand(start.Position, expression, command);
         }
 
-        private Operator TokenKindToOperator(Position position, TokenKind kind)
+#if false
+        private OperatorKind TokenKindToOperator(Position position, TokenKind kind)
         {
             switch (kind)
             {
-                case TokenKind.Asterisk: return Operator.Multiplication;
-                case TokenKind.Backslash: return Operator.Difference;
-                case TokenKind.Equal: return Operator.Equality;
-                case TokenKind.GreaterThan: return Operator.GreaterThan;
-                case TokenKind.LessThan: return Operator.LessThan;
-                case TokenKind.Minus: return Operator.Subtraction;
-                case TokenKind.Plus: return Operator.Addition;
+                case TokenKind.Asterisk: return OperatorKind.Multiplication;
+                case TokenKind.Backslash: return OperatorKind.Difference;
+                case TokenKind.Equal: return OperatorKind.Equality;
+                case TokenKind.GreaterThan: return OperatorKind.GreaterThan;
+                case TokenKind.LessThan: return OperatorKind.LessThan;
+                case TokenKind.Minus: return OperatorKind.Subtraction;
+                case TokenKind.Plus: return OperatorKind.Addition;
+                default: throw new ParserError(position, "Invalid operator encountered: " + kind.ToString());
+            }
+        }
+#endif
+
+        private string TokenKindToOperatorName(Position position, TokenKind kind)
+        {
+            switch (kind)
+            {
+                case TokenKind.Asterisk   : return "*";
+                case TokenKind.Backslash  : return "\\";
+                case TokenKind.Equal      : return "=";
+                case TokenKind.GreaterThan: return ">";
+                case TokenKind.LessThan   : return "<";
+                case TokenKind.Minus      : return "-";
+                case TokenKind.Plus       : return "+";
                 default: throw new ParserError(position, "Invalid operator encountered: " + kind.ToString());
             }
         }

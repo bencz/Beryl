@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,12 +9,11 @@ namespace Beryl.AST
     {
         void visit(AssignCommand that);
         void visit(BeginCommand that);
-        void visit(BinaryExpression that);
         void visit(BooleanExpression that);
         void visit(BooleanType that);
         void visit(CallCommand that);
         void visit(Commands that);
-        void visit(ConstDeclaration that);
+        void visit(ConstantDeclaration that);
         void visit(Declarations that);
         void visit(FunctionDeclaration that);
         void visit(FunctionExpression that);
@@ -27,8 +26,7 @@ namespace Beryl.AST
         void visit(Program that);
         void visit(StringExpression that);
         void visit(StringType that);
-        void visit(UnaryExpression that);
-        void visit(VarDeclaration that);
+        void visit(VariableDeclaration that);
         void visit(VariableExpression that);
         void visit(WhileCommand that);
     }
