@@ -176,9 +176,7 @@ namespace Beryl
         public void visit(AST.Program that)
         {
             Console.WriteLine("namespace Foobar");
-            Console.WriteLine("{");
             that.Commands.visit(this);
-            Console.WriteLine("}");
         }
 
         public void visit(StringExpression that)
