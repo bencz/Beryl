@@ -1,3 +1,10 @@
+/**
+ * Issues:
+ *
+ *     1. How are procedures implemented?  The "func" keyword could be reused by making the return type optional.
+ *     2. How are functions invoked?  C-style (ignore return value) or more strictly?
+ */
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,11 +24,14 @@ namespace Beryl
             _symbols = symbols;
             _program = program;
 
+            // create the standard set of predefined identifiers that Triangle defines
             CreateStandardEnvironment();
 
+            // start walking the AST from the topmost node
             _program.visit(this);
         }
 
+        /** Creates a synthetic block name for those blocks that are anonymous. */
         private string CreateName()
         {
             string result = _counter.ToString("D4");
@@ -155,6 +165,9 @@ namespace Beryl
                 case SymbolKind.Function:
                     throw new CheckerError(that.Position, "Cannot assign to a function");
 
+                case SymbolKind.Parameter:
+                    throw new CheckerError(that.Position, "Cannot call parameter");
+
                 case SymbolKind.Variable:
                     break;
 
@@ -189,6 +202,7 @@ namespace Beryl
             foreach (Expression argument in that.Arguments)
                 argument.visit(this);
 
+            // look up the function name
             Declaration declaration = _symbols.Lookup(that.Identifier);
             if (declaration == null)
                 throw new CheckerError(that.Position, "Unknown function name '" + that.Identifier + "' in call command");
@@ -200,6 +214,9 @@ namespace Beryl
 
                 case SymbolKind.Function:
                     break;
+
+                case SymbolKind.Parameter:
+                    throw new CheckerError(that.Position, "Cannot call parameter");
 
                 case SymbolKind.Variable:
                     throw new CheckerError(that.Position, "Cannot call variable");
@@ -288,10 +305,12 @@ namespace Beryl
             foreach (Expression argument in that.Arguments)
                 argument.visit(this);
 
+            // look up the function declaration
             Declaration declaration = _symbols.Lookup(that.Name);
             if (declaration == null)
                 throw new CheckerError(that.Position, "Unknown function name '" + that.Name + "' in function call");
 
+            // check that the symbol is actually a function
             switch (declaration.Kind)
             {
                 case SymbolKind.Constant:
@@ -300,6 +319,9 @@ namespace Beryl
                 case SymbolKind.Function:
                     break;
 
+                case SymbolKind.Parameter:
+                    throw new CheckerError(that.Position, "Cannot call parameter");
+
                 case SymbolKind.Variable:
                     throw new CheckerError(that.Position, "Cannot call variable");
 
@@ -307,6 +329,7 @@ namespace Beryl
                     throw new CheckerError(declaration.Position, "Unknown symbol kind: " + declaration.Kind.ToString());
             }
 
+            // check that the number of arguments match the number of parameters
             FunctionDeclaration function = (FunctionDeclaration) declaration;
             if (that.Arguments.Length != function.Parameters.Length)
                 throw new CheckerError(that.Position, "Incorrect number of parameters in function call");
@@ -324,6 +347,9 @@ namespace Beryl
         public void visit(IfCommand that)
         {
             that.Expression.visit(this);
+            if (that.Expression.Type.Kind != TypeKind.Boolean)
+                throw new CheckerError(that.Position, "Boolean expression expected in 'if' statement");
+
             that.If.visit(this);
             that.Else.visit(this);
         }
@@ -340,7 +366,6 @@ namespace Beryl
         public void visit(LetCommand that)
         {
             string name = CreateName();
-
             _symbols.EnterScope(name);
             foreach (Declaration declaration in that.Declarations)
                 declaration.visit(this);
@@ -382,7 +407,7 @@ namespace Beryl
         {
             Declaration declaration = _symbols.Lookup(that.Name);
             if (declaration == null)
-                throw new CheckerError(that.Position, "Undefined variable '" + that.Name + "' in expression");
+                throw new CheckerError(that.Position, "Undefined constant or variable '" + that.Name + "' in expression");
             that.Type = declaration.Type;
         }
 
