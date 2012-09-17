@@ -212,7 +212,13 @@ namespace Beryl
             FunctionDeclaration function = (FunctionDeclaration) declaration;
             if (that.Arguments.Length != function.Parameters.Length)
                 throw new CheckerError(that.Position, "Incorrect number of parameters in function call");
-            // todo: check that the argument types match the parameter types
+
+            // check that the argument types match the parameter types
+            for (int i = 0; i < that.Arguments.Length; i++)
+            {
+                if (that.Arguments[i].Type.Kind != function.Parameters[i].Type.Kind)
+                    throw new CheckerError(that.Arguments[i].Position, "Type mismatch in argument to procedure");
+            }
         }
 
         public void visit(Commands that)
@@ -223,6 +229,30 @@ namespace Beryl
 
         public void visit(ConstantDeclaration that)
         {
+            // resolve the type of the expression
+            that.Expression.visit(this);
+
+            // hack: fix up the likely incorrect type that the Parser created for the constant (always "Integer")
+            switch (that.Expression.Type.Kind)
+            {
+                case TypeKind.Boolean:
+                    that.Type = new BooleanType(that.Expression.Position);
+                    break;
+
+                case TypeKind.Integer:
+                    // simply keep the default integer type
+                    break;
+
+                case TypeKind.String:
+                    that.Type = new StringType(that.Expression.Position);
+                    break;
+
+                default:
+                    throw new CheckerError(that.Position, "Unknown type encountered: " + that.Expression.Type.Kind.ToString());
+            }
+
+            // nothing to check as we've just computed the type of the constant (cannot mismatch)
+
             _symbols.Insert(that.Position, that.Name, that);
         }
 
@@ -280,7 +310,13 @@ namespace Beryl
             FunctionDeclaration function = (FunctionDeclaration) declaration;
             if (that.Arguments.Length != function.Parameters.Length)
                 throw new CheckerError(that.Position, "Incorrect number of parameters in function call");
-            // todo: check that the argument types match the parameter types
+
+            // check that the argument types match the parameter types
+            for (int i = 0; i < that.Arguments.Length; i++)
+            {
+                if (that.Arguments[i].Type.Kind != function.Parameters[i].Type.Kind)
+                    throw new CheckerError(that.Arguments[i].Position, "Type mismatch in argument to function");
+            }
 
             that.Type = declaration.Type;
         }
@@ -354,6 +390,9 @@ namespace Beryl
         {
             that.Expression.visit(this);
             that.Command.visit(this);
+
+            if (that.Expression.Type.Kind != TypeKind.Boolean)
+                throw new CheckerError(that.Position, "Boolean expression expected in 'while' statement");
         }
     }
 }

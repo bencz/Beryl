@@ -23,6 +23,8 @@ namespace Beryl.AST
         public AST.Type Type
         {
             get { return _type; }
+            /* hack: The Parser currently makes all constants Integers, so we need to patch this up in the Checker. */
+            set { _type = value; }
         }
 
         public Declaration(Position position, string name, SymbolKind kind, AST.Type type):
